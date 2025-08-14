@@ -73,7 +73,16 @@ export function BackyardPage() {
           <Plus className="mr-2 h-4 w-4" /> Add Plant
         </Button>
       </header>
-      <main className="flex-1 relative">
+      <main 
+        className="flex-1 relative"
+        style={{
+          backgroundImage: "url('https://placehold.co/1000x1000.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+        data-ai-hint="backyard garden"
+      >
         <BackyardMap
           layout={layout}
           selectedPlantId={selectedPlantId}
