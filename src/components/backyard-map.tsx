@@ -74,23 +74,19 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
     <div className="w-full h-full p-4 md:p-8 flex items-center justify-center">
        <div 
          className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square rounded-lg shadow-lg border-2 border-border overflow-hidden bg-background"
-        >
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 w-full h-full blur-sm brightness-75"
-          style={{
+         style={{
             backgroundImage: "url('https://placehold.co/1000x1000.png')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-          }}
-          data-ai-hint="backyard garden"
-        />
+         }}
+         data-ai-hint="backyard garden"
+        >
         
         {/* Interactive Plant Overlay SVG */}
         <svg
             ref={svgRef}
             viewBox="0 0 100 100"
-            className="absolute top-0 left-0 w-full h-full"
+            className="absolute top-0 left-0 w-full h-full backdrop-blur-sm backdrop-brightness-75"
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
