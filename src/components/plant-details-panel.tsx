@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from 'react';
 import { X, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 import { format } from "date-fns"
 import { z } from "zod";
