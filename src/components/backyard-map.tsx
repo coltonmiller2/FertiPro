@@ -10,7 +10,7 @@ interface BackyardMapProps {
   layout: BackyardLayout;
   selectedPlantId: string | null;
   onSelectPlant: (plantId: string) => void;
-  onUpdatePlantPosition: (plantId: string, position: { x: number; y: number }) => void;
+  onUpdatePlantPosition: (plantId:string, position: { x: number; y: number }) => void;
 }
 
 export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePlantPosition }: BackyardMapProps) {
@@ -78,7 +78,7 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
         >
         {/* Background Image */}
         <Image
-            src="https://images.unsplash.com/photo-1588392382834-a891154bca4d?q=80&w=2070&auto=format&fit=crop"
+            src="https://placehold.co/1000x1000.png"
             alt="Backyard background"
             layout="fill"
             objectFit="cover"
