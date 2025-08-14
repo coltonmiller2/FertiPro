@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { Inter } from 'next/font/google';
-import Image from 'next/image';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -23,15 +22,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <div className="fixed inset-0 -z-10">
-            <Image
-                src="https://images.unsplash.com/photo-1588382332194-2ce6de75f362?q=80&w=2070&auto=format&fit=crop"
-                alt="Lush backyard background"
-                fill
-                style={{ objectFit: 'cover' }}
-                className="filter brightness-75"
-            />
-        </div>
+        <div
+            style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: -10,
+                backgroundImage: `url('https://images.unsplash.com/photo-1588382332194-2ce6de75f362?q=80&w=2070&auto=format&fit=crop')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'brightness(75%)',
+            }}
+        />
         {children}
         <Toaster />
       </body>
