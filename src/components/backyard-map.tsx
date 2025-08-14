@@ -73,26 +73,10 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   return (
     <div className="w-full h-full p-4 md:p-8 flex items-center justify-center">
        <div 
-         className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square rounded-lg shadow-lg border-2 border-border overflow-hidden bg-gray-50"
+         className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square rounded-lg shadow-lg border-2 border-border overflow-hidden bg-cover bg-center"
+         style={{ backgroundImage: "url('/backyard-layout.png')" }}
         >
-        {/* Background SVG */}
-        <svg viewBox="0 0 100 100" className="absolute top-0 left-0 w-full h-full" preserveAspectRatio="none">
-            {/* Grass */}
-            <path d="M0,10 C20,0 40,0 100,20 V100 H0 Z" fill="#E2F0D9" />
-            <path d="M0,10 Q5,5 10,10 T20,10 T30,10 T40,10 T50,10 T60,10 T70,10 T80,10 T90,10 T100,20" stroke="#C8E6C9" fill="none" strokeWidth="0.5" />
-
-
-            {/* Patio */}
-            <path d="M0,90 C10,95 20,100 40,100 H0 Z" fill="#F5EFE6" />
-            <path d="M0,10 C20,0,40,0,100,20 L0,90 C10,95,20,100,40,100 H0 Z" stroke="#E0E0E0" fill="none" strokeWidth="0.2" />
-            <path d="M0,50 L50,100" stroke="#E0E0E0" fill="none" strokeWidth="0.2" />
-            <path d="M0,70 L30,100" stroke="#E0E0E0" fill="none" strokeWidth="0.2" />
-            <path d="M20,100 L60,60" stroke="#E0E0E0" fill="none" strokeWidth="0.2" />
-            
-            {/* Pool */}
-            <rect x="55" y="30" width="35" height="45" rx="5" ry="5" fill="#D6EAF8" stroke="#AED6F1" strokeWidth="0.5"/>
-        </svg>
-
+        
         {/* Interactive Plant Overlay SVG */}
         <svg
             ref={svgRef}
