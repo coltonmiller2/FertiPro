@@ -23,16 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <div className="relative min-h-screen">
-          <div
-            className="fixed inset-0 -z-10 bg-cover bg-center filter blur-sm brightness-75"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1586612389533-fed88516f2ba?q=80&w=2070&auto=format&fit=crop')`,
-            }}
-            data-ai-hint="backyard garden"
-          />
-          {children}
-        </div>
+        {children}
         <Toaster />
       </body>
     </html>
