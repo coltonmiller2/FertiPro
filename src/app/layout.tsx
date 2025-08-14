@@ -24,16 +24,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <div className="relative min-h-screen">
-          <div className="fixed inset-0 -z-10">
-            <Image
-              src="https://placehold.co/1000x1000.png"
-              alt="Backyard background"
-              layout="fill"
-              objectFit="cover"
-              className="filter blur-sm brightness-75"
-              data-ai-hint="backyard garden"
-            />
-          </div>
+          <div
+            className="fixed inset-0 -z-10 bg-cover bg-center filter blur-sm brightness-75"
+            style={{
+              backgroundImage: `url('https://placehold.co/1000x1000.png')`,
+            }}
+            data-ai-hint="backyard garden"
+          />
           {children}
         </div>
         <Toaster />
