@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
-import { Alegreya } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
-const alegreya = Alegreya({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-alegreya',
+  variable: '--font-inter',
 });
 
 
@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${alegreya.variable} font-body antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased`}>
         {children}
         <Toaster />
       </body>

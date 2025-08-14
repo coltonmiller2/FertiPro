@@ -91,7 +91,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
   return (
     <div
       className={cn(
-        "absolute top-0 right-0 h-full w-full max-w-md bg-background/80 backdrop-blur-sm border-l border-border shadow-2xl transition-transform duration-300 ease-in-out",
+        "absolute top-0 right-0 h-full w-full max-w-sm bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-transform duration-300 ease-in-out",
         panelOpen ? 'translate-x-0' : 'translate-x-full'
       )}
     >
@@ -99,7 +99,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
         <div className="flex flex-col h-full">
           <header className="flex items-center justify-between p-4 border-b">
             <div>
-              <h2 className="text-xl font-bold font-headline">{plant.type} ({plant.label})</h2>
+              <h2 className="text-lg font-semibold">{plant.type} ({plant.label})</h2>
               <p className="text-sm" style={{ color: category.color }}>{category.name}</p>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -111,7 +111,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
             <div className="p-4 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline text-lg">New Record</CardTitle>
+                  <CardTitle className="text-base">New Record</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
@@ -188,7 +188,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
               <AITreatmentSuggestion plant={plant} />
 
               <div>
-                <h3 className="text-lg font-bold mb-2 font-headline">History</h3>
+                <h3 className="text-base font-semibold mb-2">History</h3>
                 <div className="space-y-3">
                   {plant.records.length > 0 ? (
                     plant.records.map((record, index) => (
@@ -212,7 +212,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
             </div>
           </ScrollArea>
           
-          <footer className="p-4 border-t mt-auto">
+          <footer className="p-4 border-t mt-auto bg-background">
              <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="w-full">

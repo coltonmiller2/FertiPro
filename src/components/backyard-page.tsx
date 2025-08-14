@@ -63,11 +63,11 @@ export function BackyardPage() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-background font-body overflow-hidden">
-      <header className="flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-6 shrink-0">
-        <div className="flex items-center gap-2">
-          <Leaf className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold text-foreground font-headline">Backyard Bounty</h1>
+    <div className="flex h-screen w-screen flex-col bg-secondary/50 font-sans overflow-hidden">
+      <header className="flex h-14 items-center justify-between border-b bg-background/95 backdrop-blur-sm px-4 lg:px-6 shrink-0">
+        <div className="flex items-center gap-2 font-semibold">
+          <Leaf className="h-6 w-6 text-primary" />
+          <span>Backyard Bounty</span>
         </div>
         <Button onClick={() => setAddModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Add Plant

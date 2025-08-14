@@ -17,9 +17,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['var(--font-sans)', 'sans-serif'],
-        headline: ['var(--font-alegreya)', 'serif'],
-        body: ['var(--font-alegreya)', 'serif'],
+        sans: ['var(--font-inter)', 'sans-serif'],
+        headline: ['var(--font-inter)', 'sans-serif'],
+        body: ['var(--font-inter)', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

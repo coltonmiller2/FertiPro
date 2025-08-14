@@ -58,7 +58,7 @@ export function AddPlantModal({ isOpen, onClose, onAddPlant, layout }: AddPlantM
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">Add a New Plant</DialogTitle>
+          <DialogTitle>Add a New Plant</DialogTitle>
           <DialogDescription>
             Choose a category and name for your new plant. You can position it on the map after adding it.
           </DialogDescription>

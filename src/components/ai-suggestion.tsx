@@ -60,8 +60,8 @@ export function AITreatmentSuggestion({ plant }: AITreatmentSuggestionProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-lg flex items-center gap-2">
-          <Wand2 className="text-accent h-5 w-5" />
+        <CardTitle className="text-base flex items-center gap-2">
+          <Wand2 className="text-primary h-5 w-5" />
           <span>AI Treatment Suggestion</span>
         </CardTitle>
         <CardDescription>
