@@ -80,15 +80,50 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        <image
-          href="https://placehold.co/1000x1000.png"
-          data-ai-hint="backyard lawn diagram"
-          x="0"
-          y="0"
-          width="100"
-          height="100"
-          preserveAspectRatio="xMidYMid slice"
+        <defs>
+            <pattern id="patio-texture" patternUnits="userSpaceOnUse" width="1" height="1">
+                <circle cx="0.5" cy="0.5" r="0.2" fill="hsl(var(--muted-foreground))" fillOpacity="0.3" />
+            </pattern>
+        </defs>
+
+        {/* Background */}
+        <rect x="0" y="0" width="100" height="100" fill="hsl(var(--card))" />
+
+        {/* Patio Area */}
+        <path
+            d="M51,99 V62 C51,62 50,55 45,55 S30,55 30,55 C30,55 18,55 18,65 S18,99 18,99 H51 Z M99,99 V62 H55 V99 H99 Z M55,58 H99V48 H55Z"
+            fill="url(#patio-texture)"
+            stroke="hsl(var(--border))"
+            strokeWidth="0.2"
         />
+
+        {/* Lawn Area */}
+        <path
+            d="M3.5,3.5 H96.5 V96.5 H3.5 V3.5 Z"
+            fill="transparent"
+            stroke="hsl(var(--border))"
+            strokeWidth="0.5"
+        />
+        <path
+            d="M18,65 C18,55 30,55 30,55 C30,55 45,55 45,55 C50,55 51,62 51,62 V85 C51,85 51,90 55,90 S70,90 75,90 S83,88 83,85 S85,75 85,70 S88,60 92,58 S95,50 95,45 S92,30 88,25 S80,15 75,12 S65,10 60,12 S50,15 45,18 S35,22 30,22 S22,25 20,30 S18,40 18,45 S20,55 18,65 Z"
+            fill="transparent"
+            stroke="hsl(var(--border))"
+            strokeWidth="0.3"
+        />
+
+        {/* Pool */}
+        <path
+            d="M30,12 C30,12 35,8 45,8 S55,10 60,15 S70,20 75,20 S85,18 88,22 S90,30 90,35 S88,42 85,45 S78,48 70,48 S60,45 55,42 S45,38 40,35 S30,30 25,25 S28,15 30,12 Z"
+            fill="hsl(var(--background))"
+            stroke="hsl(var(--border))"
+            strokeWidth="0.3"
+        />
+
+        {/* Stepping Stones */}
+        <circle cx="18" cy="65" r="1.5" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="0.2" />
+        <circle cx="95" cy="45" r="1.5" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="0.2" />
+        <circle cx="83" cy="85" r="1.5" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="0.2" />
+        <circle cx="88,25" cy="25" r="1.5" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="0.2" />
 
         {Object.values(layout).map((category) =>
           category.plants.map((plant) => (
