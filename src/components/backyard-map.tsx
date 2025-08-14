@@ -4,7 +4,6 @@
 import React, { useState, useRef, MouseEvent } from 'react';
 import type { BackyardLayout, Plant } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 
 interface BackyardMapProps {
   layout: BackyardLayout;
@@ -77,13 +76,14 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
          className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square rounded-lg shadow-lg border-2 border-border overflow-hidden bg-background"
         >
         {/* Background Image */}
-        <Image
-            src="https://placehold.co/1000x1000.png"
-            alt="Backyard background"
-            layout="fill"
-            objectFit="cover"
-            className="blur-sm brightness-75"
-            data-ai-hint="backyard garden"
+        <div 
+          className="absolute inset-0 w-full h-full blur-sm brightness-75"
+          style={{
+            backgroundImage: "url('https://placehold.co/1000x1000.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+          data-ai-hint="backyard garden"
         />
         
         {/* Interactive Plant Overlay SVG */}
