@@ -1,3 +1,5 @@
+import { BackyardPage } from '@/components/backyard-page';
+
 export default function Home() {
-  return <></>;
+  return <BackyardPage />;
 }
