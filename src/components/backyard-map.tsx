@@ -12,41 +12,6 @@ interface BackyardMapProps {
   onUpdatePlantPosition: (plantId:string, position: { x: number; y: number }) => void;
 }
 
-const BackyardBackground = () => (
-  <svg viewBox="0 0 100 100" className="absolute top-0 left-0 w-full h-full -z-10">
-    <defs>
-      <pattern id="deck-pattern" patternUnits="userSpaceOnUse" width="2" height="8" patternTransform="rotate(45)">
-        <rect width="2" height="8" fill="#FDEBD0"/>
-        <line x1="0" y1="0" x2="0" y2="8" stroke="#F5CBA7" strokeWidth="0.5"/>
-      </pattern>
-       <filter id="grass-texture" x="0" y="0" width="100%" height="100%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="2" result="turbulence"/>
-        <feColorMatrix in="turbulence" type="saturate" values="0.3" result="desaturated_turbulence" />
-        <feComponentTransfer in="desaturated_turbulence" result="colored_turbulence">
-          <feFuncR type="linear" slope="0.5" intercept="0.1" />
-          <feFuncG type="linear" slope="0.8" intercept="0.3" />
-          <feFuncB type="linear" slope="0.3" intercept="0.1" />
-        </feComponentTransfer>
-        <feComposite operator="in" in2="SourceGraphic" result="textured_grass_color"/>
-        <feBlend in="SourceGraphic" in2="textured_grass_color" mode="multiply" />
-      </filter>
-    </defs>
-    
-    {/* Main Grass Area */}
-    <rect width="100" height="100" fill="#A3E635" style={{filter: 'url(#grass-texture)'}}/>
-
-    {/* Pool Water */}
-    <path d="M 30,20 C 40,10 70,10 80,30 S 90,70 70,80 C 50,90 20,80 30,60 S 20,30 30,20 Z" fill="#67E8F9" />
-    
-    {/* Pool Decking */}
-    <path d="M 30,20 C 40,10 70,10 80,30 S 90,70 70,80 C 50,90 20,80 30,60 S 20,30 30,20 Z" 
-          stroke="url(#deck-pattern)" strokeWidth="12" fill="none" />
-    <path d="M 30,20 C 40,10 70,10 80,30 S 90,70 70,80 C 50,90 20,80 30,60 S 20,30 30,20 Z" 
-          stroke="#F5CBA7" strokeWidth="1" fill="none" />
-  </svg>
-);
-
-
 export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePlantPosition }: BackyardMapProps) {
   const [draggingPlant, setDraggingPlant] = useState<{ id: string; offset: { x: number; y: number } } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -107,10 +72,8 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   
   return (
     <div className="relative w-full h-full p-4 md:p-8 flex items-center justify-center">
-       <div className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square shadow-2xl rounded-lg overflow-hidden">
+       <div className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square shadow-2xl rounded-lg overflow-hidden bg-background/30 backdrop-blur-sm">
         
-        <BackyardBackground />
-
         {/* Interactive Plant Overlay SVG */}
         <svg
             ref={svgRef}
