@@ -73,8 +73,7 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   return (
     <div className="w-full h-full p-4 md:p-8 flex items-center justify-center">
        <div 
-         className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square rounded-lg shadow-lg border-2 border-border overflow-hidden bg-cover bg-center"
-         style={{ backgroundImage: "url('https://placehold.co/1000x1000.png')" }}
+         className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square rounded-lg shadow-lg border-2 border-border overflow-hidden bg-cover bg-center bg-[url('https://placehold.co/1000x1000.png')]"
          data-ai-hint="backyard aerial view"
         >
         <svg
