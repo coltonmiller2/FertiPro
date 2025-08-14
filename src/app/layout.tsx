@@ -1,9 +1,13 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
-import { Inter } from 'next/font/google';
+import { Alegreya } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const alegreya = Alegreya({
+  subsets: ['latin'],
+  variable: '--font-alegreya',
+});
+
 
 export const metadata: Metadata = {
   title: 'Backyard Bounty',
@@ -17,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${alegreya.variable} font-body antialiased`}>
         {children}
         <Toaster />
       </body>

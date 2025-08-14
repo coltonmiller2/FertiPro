@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState, useRef, MouseEvent } from 'react';
-import Image from 'next/image';
 import type { BackyardLayout, Plant } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -73,14 +72,11 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   
   return (
     <div className="w-full h-full p-4 md:p-8 flex items-center justify-center">
-       <div className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square rounded-lg shadow-lg border-2 border-border overflow-hidden">
-        <Image
-          src="https://placehold.co/1000x1000.png"
-          alt="Backyard Layout"
-          layout="fill"
-          objectFit="cover"
-          data-ai-hint="backyard aerial view"
-        />
+       <div 
+         className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square rounded-lg shadow-lg border-2 border-border overflow-hidden bg-cover bg-center"
+         style={{ backgroundImage: "url('https://placehold.co/1000x1000.png')" }}
+         data-ai-hint="backyard aerial view"
+        >
         <svg
             ref={svgRef}
             viewBox="0 0 100 100"
