@@ -3,6 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Leaf, Plus } from 'lucide-react';
+import Image from 'next/image';
 
 import { useBackyardData } from '@/hooks/use-backyard-data';
 import type { Plant, PlantCategory } from '@/lib/types';
@@ -73,17 +74,19 @@ export function BackyardPage() {
           <Plus className="mr-2 h-4 w-4" /> Add Plant
         </Button>
       </header>
+      
+      <div className="fixed inset-0 -z-10">
+          <Image
+              src="https://placehold.co/1000x1000.png"
+              alt="Backyard background"
+              layout="fill"
+              objectFit="cover"
+              className="filter blur-sm brightness-75"
+              data-ai-hint="backyard garden"
+           />
+      </div>
+
       <main className="flex-1 relative">
-        <div
-            className="absolute inset-0"
-            style={{
-                backgroundImage: "url('https://placehold.co/1000x1000.png')",
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                filter: 'blur(4px) brightness(0.8)',
-            }}
-            data-ai-hint="backyard garden"
-        />
         <BackyardMap
           layout={layout}
           selectedPlantId={selectedPlantId}
