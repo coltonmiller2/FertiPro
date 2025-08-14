@@ -64,7 +64,7 @@ export function BackyardPage() {
 
   return (
     <div className="flex h-screen w-screen flex-col bg-secondary/50 font-sans overflow-hidden">
-      <header className="flex h-14 items-center justify-between border-b bg-background/95 backdrop-blur-sm px-4 lg:px-6 shrink-0">
+      <header className="flex h-14 items-center justify-between border-b bg-background/95 backdrop-blur-sm px-4 lg:px-6 shrink-0 z-10">
         <div className="flex items-center gap-2 font-semibold">
           <Leaf className="h-6 w-6 text-primary" />
           <span>Backyard Bounty</span>
@@ -73,16 +73,17 @@ export function BackyardPage() {
           <Plus className="mr-2 h-4 w-4" /> Add Plant
         </Button>
       </header>
-      <main 
-        className="flex-1 relative"
-        style={{
-          backgroundImage: "url('https://placehold.co/1000x1000.png')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-        data-ai-hint="backyard garden"
-      >
+      <main className="flex-1 relative">
+        <div
+            className="absolute inset-0"
+            style={{
+                backgroundImage: "url('https://placehold.co/1000x1000.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'blur(4px) brightness(0.8)',
+            }}
+            data-ai-hint="backyard garden"
+        />
         <BackyardMap
           layout={layout}
           selectedPlantId={selectedPlantId}
