@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { Inter } from 'next/font/google';
+import Image from 'next/image';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,7 +23,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
+        <div className="relative min-h-screen">
+          <div className="fixed inset-0 -z-10">
+            <Image
+              src="https://placehold.co/1000x1000.png"
+              alt="Backyard background"
+              layout="fill"
+              objectFit="cover"
+              className="filter blur-sm brightness-75"
+              data-ai-hint="backyard garden"
+            />
+          </div>
+          {children}
+        </div>
         <Toaster />
       </body>
     </html>
