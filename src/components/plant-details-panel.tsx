@@ -47,9 +47,10 @@ interface PlantDetailsPanelProps {
   plant: Plant | null;
   category: PlantCategory | null;
   onClose: () => void;
-  onUpdatePlant: (plantId: string, record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => void;
+  onAddRecord: (plantId: string, record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => void;
   onUpdateRecord: (plantId: string, record: PlantRecord, photoFile?: File) => void;
   onDeletePlant: (plantId: string) => void;
+  onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void;
 }
 
 const recordFormSchema = z.object({
@@ -62,14 +63,62 @@ const recordFormSchema = z.object({
   photo: z.any().optional(),
 });
 
-function fileToDataUri(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+const plantTypeFormSchema = z.object({
+  type: z.string().min(2, { message: "Plant type must be at least 2 characters." }),
+});
+
+
+const EditPlantTypeModal: React.FC<{
+    plant: Plant;
+    onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void;
+    children: React.ReactNode;
+}> = ({ plant, onUpdatePlant, children }) => {
+    const [isOpen, setIsOpen] = React.useState(false);
+
+    const form = useForm<z.infer<typeof plantTypeFormSchema>>({
+        resolver: zodResolver(plantTypeFormSchema),
+        defaultValues: {
+            type: plant.type,
+        },
     });
-}
+
+    function onSubmit(values: z.infer<typeof plantTypeFormSchema>) {
+        onUpdatePlant(plant.id, { type: values.type });
+        setIsOpen(false);
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Plant Type</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="type"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Plant Type</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose>
+                            <Button type="submit">Save Changes</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 const EditRecordModal: React.FC<{
     record: PlantRecord;
@@ -136,7 +185,7 @@ const EditRecordModal: React.FC<{
 };
 
 
-export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onUpdateRecord, onDeletePlant }: PlantDetailsPanelProps) {
+export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant, onUpdatePlant }: PlantDetailsPanelProps) {
   
   const form = useForm<z.infer<typeof recordFormSchema>>({
     resolver: zodResolver(recordFormSchema),
@@ -155,7 +204,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onU
     if (!plant) return;
     const photoFile = values.photo?.[0];
 
-    onUpdatePlant(plant.id, {
+    onAddRecord(plant.id, {
       ...values,
       date: format(values.date, "yyyy-MM-dd"),
     }, photoFile);
@@ -193,9 +242,18 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onU
       {plant && category && (
         <div className="flex flex-col h-full">
           <header className="flex items-center justify-between p-4 border-b">
-            <div>
-              <h2 className="text-lg font-semibold">{plant.type} ({plant.label})</h2>
-              <p className="text-sm" style={{ color: category.color }}>{category.name}</p>
+            <div className="flex items-center gap-2">
+                <div>
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        {plant.type} ({plant.label})
+                        <EditPlantTypeModal plant={plant} onUpdatePlant={onUpdatePlant}>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </EditPlantTypeModal>
+                    </h2>
+                    <p className="text-sm" style={{ color: category.color }}>{category.name}</p>
+                </div>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-5 w-5" />

@@ -13,7 +13,7 @@ import { TableView } from '@/components/table-view';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function BackyardPage() {
-  const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, updateRecordInPlant } = useBackyardData();
+  const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, updateRecordInPlant, updatePlant } = useBackyardData();
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
@@ -47,6 +47,10 @@ export function BackyardPage() {
   const handleDeletePlant = (plantId: string) => {
     removePlant(plantId);
     setSelectedPlantId(null);
+  };
+
+  const handleUpdatePlant = (plantId: string, updates: Partial<Plant>) => {
+    updatePlant(plantId, updates);
   };
 
   if (loading || !layout) {
@@ -104,9 +108,10 @@ export function BackyardPage() {
           plant={selectedPlant}
           category={selectedPlantCategory}
           onClose={() => handleSelectPlant(null)}
-          onUpdatePlant={handleAddRecord}
+          onAddRecord={handleAddRecord}
           onUpdateRecord={handleUpdateRecord}
           onDeletePlant={handleDeletePlant}
+          onUpdatePlant={handleUpdatePlant}
         />
       </main>
       <AddPlantModal

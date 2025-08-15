@@ -160,6 +160,25 @@ export function useBackyardData() {
     }
   }, [layout, updateLayout]);
 
+  const updatePlant = useCallback((plantId: string, updates: Partial<Plant>) => {
+    if (!layout) return;
+    const newLayout = { ...layout };
+    let updated = false;
+    for (const categoryKey in newLayout) {
+      const category = newLayout[categoryKey];
+      const plantIndex = category.plants.findIndex(p => p.id === plantId);
+      if (plantIndex !== -1) {
+        // Create a new plant object with the updates applied
+        category.plants[plantIndex] = { ...category.plants[plantIndex], ...updates };
+        updated = true;
+        break;
+      }
+    }
+    if (updated) {
+      updateLayout(newLayout);
+    }
+  }, [layout, updateLayout]);
 
-  return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, updateRecordInPlant };
+
+  return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, updateRecordInPlant, updatePlant };
 }
