@@ -71,7 +71,9 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
   };
   
   return (
-    <div className="relative p-4 md:p-8 flex items-center justify-center h-full">
+    <div
+      className="p-4 md:p-8 flex items-center justify-center"
+    >
       <div
         className="relative w-full max-w-[1000px] aspect-square bg-white shadow-2xl rounded-lg bg-contain bg-no-repeat bg-center"
         style={{
@@ -81,7 +83,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
         <svg
             ref={svgRef}
             viewBox="0 0 100 100"
-            className="absolute top-0 left-0 w-full h-full"
+            className="w-full h-full"
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
