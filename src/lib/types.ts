@@ -7,6 +7,8 @@ export interface Record {
   phLevel: string;
   moistureLevel: string;
   photoDataUri?: string;
+  nextScheduledFertilizationDate?: string;
+  trunkDiameter?: string;
 }
 
 export interface Plant {
@@ -15,8 +17,6 @@ export interface Plant {
   type: string;
   position: { x: number; y: number };
   records: Record[];
-  nextScheduledFertilizationDate?: string;
-  trunkDiameter?: string;
 }
 
 export interface PlantCategory {

@@ -34,7 +34,6 @@ type PlantRow = Plant & { categoryName: string; categoryColor: string };
 
 const formatDisplayDate = (dateString?: string) => {
     if (!dateString) return "N/A";
-    // The string is in 'yyyy-MM-dd' format. Create a Date object that treats it as local time.
     const date = new Date(dateString.replace(/-/g, '/'));
     if (isNaN(date.getTime())) return 'Invalid Date';
     return format(date, "PPP");
@@ -137,7 +136,8 @@ export const columns: ColumnDef<PlantRow>[] = [
         cell: info => <div className="pl-4">{info.getValue<string>()}</div>
     },
     {
-        accessorKey: "nextScheduledFertilizationDate",
+        id: "nextScheduledFertilizationDate",
+        accessorFn: row => (row.records.length > 0 ? row.records[0].nextScheduledFertilizationDate : null),
         header: ({ column }) => (
             <Button
                 variant="ghost"
@@ -166,14 +166,16 @@ export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelected
   }, [layout]);
 
   const rowSelection = React.useMemo(() => {
-    return selectedPlantIds.reduce((acc, id) => {
-      const index = allPlants.findIndex(p => p.id === id);
-      if (index !== -1) {
-        acc[index] = true;
-      }
-      return acc;
-    }, {} as RowSelectionState);
+    const selection: RowSelectionState = {};
+    selectedPlantIds.forEach(id => {
+        const index = allPlants.findIndex(p => p.id === id);
+        if (index > -1) {
+            selection[index] = true;
+        }
+    });
+    return selection;
   }, [selectedPlantIds, allPlants]);
+
 
   const table = useReactTable({
     data: allPlants,
@@ -183,10 +185,10 @@ export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelected
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    onRowSelectionChange: (updater) => {
-        const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
-        const selectedIds = Object.keys(newSelection).map(index => allPlants[parseInt(index)].id);
-        setSelectedPlantIds(selectedIds);
+    onRowSelectionChange: (updaterOrValue) => {
+        const newSelectedRowIds = updaterOrValue instanceof Function ? updaterOrValue(rowSelection) : updaterOrValue;
+        const newSelectedPlantIds = Object.keys(newSelectedRowIds).map(index => allPlants[parseInt(index)].id);
+        setSelectedPlantIds(newSelectedPlantIds);
     },
     state: {
       sorting,

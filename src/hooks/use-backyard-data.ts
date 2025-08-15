@@ -126,15 +126,26 @@ export function useBackyardData() {
         id: Date.now(),
         photoDataUri: photoFile ? await fileToDataUri(photoFile) : undefined,
     };
-
+    
     const newLayout = structuredClone(layout);
     for (const categoryKey in newLayout) {
         const category = newLayout[categoryKey];
         if (isPlantCategory(category)) {
             const plant = category.plants.find(p => p.id === plantId);
             if (plant) {
-                plant.records.push(newRecord);
-                plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                // Carry over latest values if not provided in the new record
+                const latestRecord = plant.records[0];
+                if (latestRecord) {
+                    if (newRecord.trunkDiameter === undefined || newRecord.trunkDiameter === '') {
+                        newRecord.trunkDiameter = latestRecord.trunkDiameter;
+                    }
+                    if (newRecord.nextScheduledFertilizationDate === undefined || newRecord.nextScheduledFertilizationDate === null) {
+                        newRecord.nextScheduledFertilizationDate = latestRecord.nextScheduledFertilizationDate;
+                    }
+                }
+                
+                plant.records.unshift(newRecord);
+                // No need to sort here as we are using unshift
                 updateLayout(newLayout);
                 return;
             }
@@ -158,8 +169,8 @@ export function useBackyardData() {
                         id: Date.now() + Math.random(), // Add random to avoid collision if processed at same ms
                         photoDataUri: photoDataUri,
                     };
-                    plant.records.push(newRecord);
-                    plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    plant.records.unshift(newRecord);
+                    // no need to sort here
                 }
             });
         }

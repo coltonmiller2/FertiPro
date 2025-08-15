@@ -31,9 +31,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
@@ -61,149 +58,26 @@ const recordFormSchema = z.object({
   phLevel: z.string().optional(),
   moistureLevel: z.string().optional(),
   photo: z.any().optional(),
-});
-
-const plantDetailsFormSchema = z.object({
-  type: z.string().min(2, { message: "Plant type must be at least 2 characters." }),
   nextScheduledFertilizationDate: z.date().optional().nullable(),
   trunkDiameter: z.string().optional(),
 });
 
+
 const formatDisplayDate = (dateString: string | undefined) => {
   if (!dateString) return "N/A";
-  // The string is in 'yyyy-MM-dd' format. Create a Date object that treats it as local time.
   const date = new Date(dateString.replace(/-/g, '/'));
   if (isNaN(date.getTime())) return 'Invalid Date';
   return format(date, "PPP");
 }
 
-const EditPlantDetailsModal: React.FC<{
-    plant: Plant;
-    category: PlantCategory;
-    onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void;
-    children: React.ReactNode;
-}> = ({ plant, category, onUpdatePlant, children }) => {
-    const [isOpen, setIsOpen] = React.useState(false);
-
-    const form = useForm<z.infer<typeof plantDetailsFormSchema>>({
-        resolver: zodResolver(plantDetailsFormSchema),
-    });
-    
-    React.useEffect(() => {
-        if (isOpen) {
-            const nextDate = plant.nextScheduledFertilizationDate 
-                ? new Date(plant.nextScheduledFertilizationDate.replace(/-/g, '/'))
-                : null;
-
-            form.reset({ 
-                type: plant.type,
-                nextScheduledFertilizationDate: nextDate,
-                trunkDiameter: plant.trunkDiameter || "",
-            });
-        }
-    }, [isOpen, plant, form]);
-
-
-    function onSubmit(values: z.infer<typeof plantDetailsFormSchema>) {
-        const updates: Partial<Plant> = {
-            type: values.type,
-            nextScheduledFertilizationDate: values.nextScheduledFertilizationDate 
-                ? format(values.nextScheduledFertilizationDate, 'yyyy-MM-dd')
-                : undefined,
-            trunkDiameter: values.trunkDiameter
-        };
-        onUpdatePlant(plant.id, updates);
-        setIsOpen(false);
-    }
-    
-    const isPalm = category.name === 'Queen and King Palms';
-
-    return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Edit Plant Details</DialogTitle>
-                </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="type"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Plant Type</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         {isPalm && (
-                            <FormField
-                                control={form.control}
-                                name="trunkDiameter"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Trunk Diameter</FormLabel>
-                                    <FormControl>
-                                    <Input placeholder="e.g., 12&quot;" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                        )}
-                        <FormField
-                            control={form.control}
-                            name="nextScheduledFertilizationDate"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>Next Scheduled Fertilization</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <FormControl>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                                >
-                                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={field.value ?? undefined}
-                                                onSelect={field.onChange}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <DialogFooter>
-                            <DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose>
-                            <Button type="submit">Save Changes</Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
 const EditRecordModal: React.FC<{
     record: PlantRecord;
     plantId: string;
+    isPalm: boolean;
     onUpdateRecord: (plantId: string, record: PlantRecord, photoFile?: File) => void;
     isOpen: boolean;
     onClose: () => void;
-}> = ({ record, plantId, onUpdateRecord, isOpen, onClose }) => {
+}> = ({ record, plantId, isPalm, onUpdateRecord, isOpen, onClose }) => {
     
     const form = useForm<z.infer<typeof recordFormSchema>>({
         resolver: zodResolver(recordFormSchema),
@@ -211,9 +85,13 @@ const EditRecordModal: React.FC<{
     
     React.useEffect(() => {
         if (isOpen && record) {
+            const nextDate = record.nextScheduledFertilizationDate 
+                ? new Date(record.nextScheduledFertilizationDate.replace(/-/g, '/'))
+                : null;
             form.reset({
                 ...record,
                 date: new Date(record.date.replace(/-/g, '/')),
+                nextScheduledFertilizationDate: nextDate,
                 photo: undefined,
             });
         }
@@ -227,6 +105,9 @@ const EditRecordModal: React.FC<{
             ...record,
             ...values,
             date: format(values.date, 'yyyy-MM-dd'),
+            nextScheduledFertilizationDate: values.nextScheduledFertilizationDate 
+                ? format(values.nextScheduledFertilizationDate, 'yyyy-MM-dd')
+                : undefined,
         };
         delete (updatedRecord as any).photo;
 
@@ -241,7 +122,7 @@ const EditRecordModal: React.FC<{
                     <DialogTitle>Edit Record</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
                         <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="treatment" render={({ field }) => ( <FormItem><FormLabel>Treatment</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="e.g., 4 TBSP" {...field} /></FormControl><FormMessage /></FormItem> )} />
@@ -249,6 +130,17 @@ const EditRecordModal: React.FC<{
                             <FormField control={form.control} name="phLevel" render={({ field }) => ( <FormItem><FormLabel>pH Level</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
                             <FormField control={form.control} name="moistureLevel" render={({ field }) => ( <FormItem><FormLabel>Moisture %</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
                         </div>
+                        {isPalm && (
+                            <FormField control={form.control} name="trunkDiameter" render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Trunk Diameter</FormLabel>
+                                <FormControl><Input placeholder='e.g., 12"' {...field} value={field.value ?? ""} /></FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )} />
+                        )}
+                        <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+
                          <FormField control={form.control} name="photo" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Photo</FormLabel>
@@ -256,10 +148,10 @@ const EditRecordModal: React.FC<{
                                 <FormMessage />
                             </FormItem>
                         )}/>
-                        <DialogFooter>
+                        <div className="flex justify-end gap-2 pt-4">
                             <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
                             <Button type="submit">Save Changes</Button>
-                        </DialogFooter>
+                        </div>
                     </form>
                 </Form>
             </DialogContent>
@@ -268,9 +160,12 @@ const EditRecordModal: React.FC<{
 };
 
 
-export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant, onUpdatePlant }: PlantDetailsPanelProps) {
+export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant }: PlantDetailsPanelProps) {
   
   const [editingRecord, setEditingRecord] = React.useState<PlantRecord | null>(null);
+  
+  const isPalm = category?.name === 'Queen and King Palms';
+  const latestRecord = plant?.records?.[0];
 
   const form = useForm<z.infer<typeof recordFormSchema>>({
     resolver: zodResolver(recordFormSchema),
@@ -283,6 +178,24 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     },
   });
 
+  React.useEffect(() => {
+    if (plant) {
+        const nextDate = latestRecord?.nextScheduledFertilizationDate 
+            ? new Date(latestRecord.nextScheduledFertilizationDate.replace(/-/g, '/'))
+            : null;
+        form.reset({
+            date: new Date(),
+            treatment: "",
+            notes: "",
+            phLevel: "",
+            moistureLevel: "",
+            photo: undefined,
+            trunkDiameter: latestRecord?.trunkDiameter || "",
+            nextScheduledFertilizationDate: nextDate,
+        });
+    }
+  }, [plant, latestRecord, form]);
+
   const photoRef = form.register("photo");
 
   async function onSubmit(values: z.infer<typeof recordFormSchema>) {
@@ -292,15 +205,19 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     onAddRecord(plant.id, {
       ...values,
       date: format(values.date, 'yyyy-MM-dd'),
+      nextScheduledFertilizationDate: values.nextScheduledFertilizationDate 
+        ? format(values.nextScheduledFertilizationDate, 'yyyy-MM-dd')
+        : undefined,
     }, photoFile);
 
     form.reset({
+        ...form.getValues(),
         date: new Date(),
         treatment: "",
         notes: "",
         phLevel: "",
         moistureLevel: "",
-        photo: null
+        photo: undefined,
     });
     const photoInput = document.querySelector('input[name="photo"]') as HTMLInputElement | null;
     if (photoInput) {
@@ -309,18 +226,6 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
   }
 
   const panelOpen = !!plant;
-
-  React.useEffect(() => {
-    form.reset({
-      date: new Date(),
-      treatment: "",
-      notes: "",
-      phLevel: "",
-      moistureLevel: "",
-    });
-  }, [plant, form]);
-  
-  const isPalm = category?.name === 'Queen and King Palms';
 
   return (
     <div
@@ -337,19 +242,14 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                 <div>
                     <h2 className="text-lg font-semibold flex items-center gap-2">
                         {plant.type} ({plant.label})
-                        <EditPlantDetailsModal plant={plant} category={category} onUpdatePlant={onUpdatePlant}>
-                            <Button variant="ghost" size="icon" className="h-6 w-6">
-                                <Edit className="h-4 w-4" />
-                            </Button>
-                        </EditPlantDetailsModal>
                     </h2>
                     <p className="text-sm" style={{ color: category.color }}>{category.name}</p>
                      <p className="text-xs text-muted-foreground mt-1">
-                        Next Fertilization: {formatDisplayDate(plant.nextScheduledFertilizationDate)}
+                        Next Fertilization: {formatDisplayDate(latestRecord?.nextScheduledFertilizationDate)}
                     </p>
-                    {isPalm && plant.trunkDiameter && (
+                    {isPalm && latestRecord?.trunkDiameter && (
                         <p className="text-xs text-muted-foreground mt-1">
-                            Trunk Diameter: {plant.trunkDiameter}
+                            Trunk Diameter: {latestRecord.trunkDiameter}
                         </p>
                     )}
                 </div>
@@ -368,76 +268,24 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                 <CardContent>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="date"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel>Date</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField control={form.control} name="treatment" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Treatment</FormLabel>
-                            <FormControl><Input placeholder="e.g., Palm Gain 8-2-12" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField control={form.control} name="notes" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Notes</FormLabel>
-                            <FormControl><Textarea placeholder="e.g., 4 TBSP" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="treatment" render={({ field }) => ( <FormItem><FormLabel>Treatment</FormLabel><FormControl><Input placeholder="e.g., Palm Gain 8-2-12" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                      <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="e.g., 4 TBSP" {...field} /></FormControl><FormMessage /></FormItem> )} />
                       <div className="grid grid-cols-2 gap-4">
-                         <FormField control={form.control} name="phLevel" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>pH Level</FormLabel>
-                              <FormControl><Input placeholder="e.g., 6.8" {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                         <FormField control={form.control} name="moistureLevel" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Moisture %</FormLabel>
-                              <FormControl><Input placeholder="e.g., 55" {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="phLevel" render={({ field }) => ( <FormItem><FormLabel>pH Level</FormLabel><FormControl><Input placeholder="e.g., 6.8" {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                        <FormField control={form.control} name="moistureLevel" render={({ field }) => ( <FormItem><FormLabel>Moisture %</FormLabel><FormControl><Input placeholder="e.g., 55" {...field} /></FormControl><FormMessage /></FormItem> )}/>
                       </div>
-                       <FormField control={form.control} name="photo" render={({ field }) => (
+                      {isPalm && (
+                          <FormField control={form.control} name="trunkDiameter" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Attach Photo</FormLabel>
-                                <FormControl><Input type="file" accept="image/*" {...photoRef} /></FormControl>
+                                <FormLabel>Trunk Diameter</FormLabel>
+                                <FormControl><Input placeholder="e.g., 12&quot;" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
-                        )}/>
+                          )} />
+                      )}
+                      <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="photo" render={({ field }) => ( <FormItem><FormLabel>Attach Photo</FormLabel><FormControl><Input type="file" accept="image/*" {...photoRef} /></FormControl><FormMessage /></FormItem> )}/>
                       <Button type="submit" className="w-full">Add Record</Button>
                     </form>
                   </Form>
@@ -461,6 +309,8 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                                     {(record.phLevel || record.moistureLevel) && <Separator className="my-2" />}
                                     {record.phLevel && <p><strong>pH:</strong> {record.phLevel}</p>}
                                     {record.moistureLevel && <p><strong>Moisture:</strong> {record.moistureLevel}%</p>}
+                                    {record.trunkDiameter && <p><strong>Trunk Diameter:</strong> {record.trunkDiameter}</p>}
+                                    {record.nextScheduledFertilizationDate && <p><strong>Next Fertilization:</strong> {formatDisplayDate(record.nextScheduledFertilizationDate)}</p>}
                                 </div>
                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingRecord(record)}>
                                     <Edit className="h-4 w-4" />
@@ -514,11 +364,10 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
           onClose={() => setEditingRecord(null)}
           record={editingRecord}
           plantId={plant!.id}
+          isPalm={isPalm}
           onUpdateRecord={onUpdateRecord}
         />
       )}
     </div>
   );
 }
-
-    
