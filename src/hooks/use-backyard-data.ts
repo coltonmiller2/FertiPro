@@ -125,27 +125,26 @@ export function useBackyardData() {
 
     if (photoFile) {
         updatedRecord.photoDataUri = await fileToDataUri(photoFile);
-    } else if (updatedRecord.photoDataUri === undefined) {
-        // Ensure photo is not lost if no new file is uploaded
-        const oldRecord = layout[Object.keys(layout).find(key => layout[key].plants.find(p => p.id === plantId))!]
-                            .plants.find(p => p.id === plantId)!
-                            .records.find(r => r.id === updatedRecord.id);
-        if (oldRecord?.photoDataUri) {
-            updatedRecord.photoDataUri = oldRecord.photoDataUri;
-        }
     }
 
+    let a_plant: Plant | undefined;
+    let a_category: string | undefined;
 
     for (const categoryKey in newLayout) {
         const plant = newLayout[categoryKey].plants.find(p => p.id === plantId);
         if (plant) {
-            const recordIndex = plant.records.findIndex(r => r.id === updatedRecord.id);
-            if (recordIndex !== -1) {
-                plant.records[recordIndex] = updatedRecord;
-                plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                updateLayout(newLayout);
-                return;
-            }
+            a_plant = plant;
+            a_category = categoryKey;
+            break;
+        }
+    }
+
+    if (a_plant && a_category) {
+        const recordIndex = a_plant.records.findIndex(r => r.id === updatedRecord.id);
+        if (recordIndex !== -1) {
+            a_plant.records[recordIndex] = updatedRecord;
+            a_plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            updateLayout(newLayout);
         }
     }
   }, [layout, updateLayout]);
