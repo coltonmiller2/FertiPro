@@ -143,7 +143,7 @@ const EditRecordModal: React.FC<{
             const [year, month, day] = record.date.split('-').map(Number);
             form.reset({
                 ...record,
-                date: new Date(year, month - 1, day), // Use local timezone date
+                date: new Date(year, month - 1, day),
                 photo: undefined,
             });
         }
@@ -253,8 +253,11 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
   }, [plant, form]);
   
   const formatDisplayDate = (dateString: string) => {
-    // Dates are stored as 'YYYY-MM-DD'. We need to parse this in UTC to avoid timezone shifts.
-    return format(new Date(`${dateString}T00:00:00Z`), "PPP");
+    // Dates are stored as 'YYYY-MM-DD'. We need to parse this as a local date, not UTC.
+    // The issue is that `new Date('YYYY-MM-DD')` can be interpreted as UTC midnight,
+    // which can be the previous day in some timezones.
+    // Adding T00:00 (without Z) makes it explicitly local midnight.
+    return format(new Date(`${dateString}T00:00:00`), "PPP");
   }
 
 
@@ -447,5 +450,3 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     </div>
   );
 }
-
-    
