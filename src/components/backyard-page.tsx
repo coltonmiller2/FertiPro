@@ -172,6 +172,7 @@ export function BackyardPage() {
         </div>
         
         <PlantDetailsPanel
+          isOpen={showDetailsPanel}
           plant={showDetailsPanel ? selectedPlants[0] : null}
           category={selectedPlantCategory}
           onClose={() => handleSelectPlant(null, false)}
