@@ -79,7 +79,7 @@ export function BackyardPage() {
           : [...prev, plantId]
       );
     } else {
-      setSelectedPlantIds([plantId]);
+      setSelectedPlantIds(prev => prev.includes(plantId) && prev.length === 1 ? [] : [plantId]);
     }
   };
   
@@ -174,7 +174,7 @@ export function BackyardPage() {
         <PlantDetailsPanel
           plant={showDetailsPanel ? selectedPlants[0] : null}
           category={selectedPlantCategory}
-          onClose={() => handleSelectPlant(null)}
+          onClose={() => handleSelectPlant(null, false)}
           onAddRecord={handleAddRecord}
           onUpdateRecord={handleUpdateRecord}
           onDeletePlant={handleDeletePlant}

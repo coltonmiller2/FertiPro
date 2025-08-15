@@ -26,22 +26,18 @@ import { Checkbox } from "./ui/checkbox";
 interface TableViewProps {
   layout: Omit<BackyardLayout, 'version'>;
   selectedPlantIds: string[];
-  onSelectPlant: (plantId: string | null) => void;
-  setSelectedPlantIds: (ids: string[]) => void;
+  onSelectPlant: (plantId: string | null, isMultiSelect: boolean) => void;
+  setSelectedPlantIds: (ids: string[] | ((prev: string[]) => string[])) => void;
 }
 
 type PlantRow = Plant & { categoryName: string; categoryColor: string };
 
 const formatDisplayDate = (dateString?: string) => {
     if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    // This check is necessary because `new Date('invalid-string')` doesn't throw but returns an invalid date.
-    if (isNaN(date.getTime())) return "N/A";
-    // Adjust for timezone by getting the UTC date parts
-    const year = date.getUTCFullYear();
-    const month = date.getUTCMonth();
-    const day = date.getUTCDate();
-    return format(new Date(year, month, day), "PPP");
+    // The string is in 'yyyy-MM-dd' format. Create a Date object that treats it as local time.
+    const date = new Date(dateString.replace(/-/g, '/'));
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return format(date, "PPP");
 }
 
 export const columns: ColumnDef<PlantRow>[] = [
@@ -158,7 +154,6 @@ export const columns: ColumnDef<PlantRow>[] = [
 export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelectedPlantIds }: TableViewProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
   const allPlants = React.useMemo(() => {
     return Object.values(layout).flatMap(category =>
@@ -170,6 +165,16 @@ export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelected
     );
   }, [layout]);
 
+  const rowSelection = React.useMemo(() => {
+    return selectedPlantIds.reduce((acc, id) => {
+      const index = allPlants.findIndex(p => p.id === id);
+      if (index !== -1) {
+        acc[index] = true;
+      }
+      return acc;
+    }, {} as RowSelectionState);
+  }, [selectedPlantIds, allPlants]);
+
   const table = useReactTable({
     data: allPlants,
     columns,
@@ -178,29 +183,18 @@ export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelected
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: (updater) => {
+        const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
+        const selectedIds = Object.keys(newSelection).map(index => allPlants[parseInt(index)].id);
+        setSelectedPlantIds(selectedIds);
+    },
     state: {
       sorting,
       columnFilters,
       rowSelection,
     },
+    enableRowSelection: true,
   });
-
-  React.useEffect(() => {
-    const selectedIds = Object.keys(rowSelection).map(index => allPlants[parseInt(index)].id);
-    setSelectedPlantIds(selectedIds);
-  }, [rowSelection, allPlants, setSelectedPlantIds]);
-
-  React.useEffect(() => {
-      const newRowSelection: RowSelectionState = {};
-      selectedPlantIds.forEach(id => {
-          const index = allPlants.findIndex(p => p.id === id);
-          if (index !== -1) {
-              newRowSelection[index] = true;
-          }
-      });
-      setRowSelection(newRowSelection);
-  }, [selectedPlantIds, allPlants]);
 
   return (
     <div className="p-4 md:p-8">
@@ -233,7 +227,13 @@ export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelected
                     table.getRowModel().rows.map(row => (
                         <TableRow
                             key={row.id}
-                            onClick={() => onSelectPlant(row.original.id)}
+                            onClick={(e) => {
+                                // Don't trigger row click if clicking on the checkbox
+                                if ((e.target as HTMLElement).closest('[role="checkbox"]')) {
+                                    return;
+                                }
+                                onSelectPlant(row.original.id, e.ctrlKey || e.metaKey);
+                            }}
                             className="cursor-pointer"
                             data-state={row.getIsSelected() && "selected"}
                         >
