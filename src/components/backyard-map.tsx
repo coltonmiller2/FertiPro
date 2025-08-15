@@ -71,7 +71,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
   };
   
   return (
-    <div className="relative w-full h-full p-4 md:p-8 flex items-center justify-center">
+    <div className="relative p-4 md:p-8 flex items-center justify-center h-full">
       <div
         className="relative w-full max-w-[1000px] aspect-square bg-white shadow-2xl rounded-lg bg-contain bg-no-repeat bg-center"
         style={{
