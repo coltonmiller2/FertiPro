@@ -75,10 +75,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
       className="p-4 md:p-8 flex items-center justify-center h-full w-full"
     >
       <div
-        className="relative w-full h-full max-w-[1000px] max-h-[1000px] bg-white shadow-2xl rounded-lg bg-contain bg-no-repeat bg-center"
-        style={{
-          backgroundImage: `url('https://i.imgur.com/7wkMw77.png')`,
-        }}
+        className="relative w-full h-full max-w-[1000px] max-h-[1000px] bg-white shadow-2xl rounded-lg aspect-square"
       >
         <svg
             ref={svgRef}
@@ -98,6 +95,8 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
                 </feMerge>
             </filter>
             </defs>
+
+            <image href="https://i.imgur.com/7wkMw77.png" x="0" y="0" width="100" height="100" />
 
             {Object.values(layout).map((category) =>
             category.plants.map((plant) => {
