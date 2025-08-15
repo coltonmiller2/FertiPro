@@ -151,7 +151,7 @@ export function BackyardPage() {
       </header>
       
       <main className="flex flex-1 overflow-hidden">
-        <div className={cn("flex-1 h-full transition-all duration-300 ease-in-out", showRightPanel ? "w-[calc(100%-24rem)]" : "w-full")}>
+        <div className={cn("transition-all duration-500 ease-in-out", showRightPanel ? "w-[calc(100%-24rem)]" : "w-full")}>
             {viewMode === 'map' ? (
                 <BackyardMap
                     layout={filteredLayout}
@@ -171,7 +171,7 @@ export function BackyardPage() {
             )}
         </div>
         
-        <div className={cn("transition-all duration-300 ease-in-out", showRightPanel ? 'w-96' : 'w-0')}>
+        <div className={cn("transition-all duration-500 ease-in-out flex-shrink-0", showRightPanel ? 'w-96' : 'w-0')}>
             {showDetailsPanel && (
                 <PlantDetailsPanel
                   plant={selectedPlants[0]}
