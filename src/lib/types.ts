@@ -1,3 +1,4 @@
+
 export interface Record {
   id: number;
   date: string;
@@ -14,6 +15,7 @@ export interface Plant {
   type: string;
   position: { x: number; y: number };
   records: Record[];
+  nextScheduledFertilizationDate?: string;
 }
 
 export interface PlantCategory {

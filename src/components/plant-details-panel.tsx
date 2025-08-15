@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from 'react';
-import { X, Trash2, Calendar as CalendarIcon, Edit, Image as ImageIcon } from 'lucide-react';
+import { X, Trash2, Calendar as CalendarIcon, Edit } from 'lucide-react';
 import { format } from "date-fns"
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -63,33 +63,44 @@ const recordFormSchema = z.object({
   photo: z.any().optional(),
 });
 
-const plantTypeFormSchema = z.object({
+const plantDetailsFormSchema = z.object({
   type: z.string().min(2, { message: "Plant type must be at least 2 characters." }),
+  nextScheduledFertilizationDate: z.date().optional().nullable(),
 });
 
-const EditPlantTypeModal: React.FC<{
+const EditPlantDetailsModal: React.FC<{
     plant: Plant;
     onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void;
     children: React.ReactNode;
 }> = ({ plant, onUpdatePlant, children }) => {
     const [isOpen, setIsOpen] = React.useState(false);
 
-    const form = useForm<z.infer<typeof plantTypeFormSchema>>({
-        resolver: zodResolver(plantTypeFormSchema),
-        defaultValues: {
-            type: plant.type,
-        },
+    const form = useForm<z.infer<typeof plantDetailsFormSchema>>({
+        resolver: zodResolver(plantDetailsFormSchema),
     });
     
     React.useEffect(() => {
         if (isOpen) {
-            form.reset({ type: plant.type });
+            const nextDate = plant.nextScheduledFertilizationDate 
+                ? new Date(`${plant.nextScheduledFertilizationDate}T00:00`)
+                : null;
+
+            form.reset({ 
+                type: plant.type,
+                nextScheduledFertilizationDate: nextDate,
+            });
         }
     }, [isOpen, plant, form]);
 
 
-    function onSubmit(values: z.infer<typeof plantTypeFormSchema>) {
-        onUpdatePlant(plant.id, { type: values.type });
+    function onSubmit(values: z.infer<typeof plantDetailsFormSchema>) {
+        const updates: Partial<Plant> = {
+            type: values.type,
+            nextScheduledFertilizationDate: values.nextScheduledFertilizationDate 
+                ? format(values.nextScheduledFertilizationDate, 'yyyy-MM-dd')
+                : undefined,
+        };
+        onUpdatePlant(plant.id, updates);
         setIsOpen(false);
     }
 
@@ -98,7 +109,7 @@ const EditPlantTypeModal: React.FC<{
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Edit Plant Type</DialogTitle>
+                    <DialogTitle>Edit Plant Details</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -111,6 +122,37 @@ const EditPlantTypeModal: React.FC<{
                                     <FormControl>
                                         <Input {...field} />
                                     </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="nextScheduledFertilizationDate"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Next Scheduled Fertilization</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                                                >
+                                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={field.value ?? undefined}
+                                                onSelect={field.onChange}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -140,10 +182,9 @@ const EditRecordModal: React.FC<{
     
     React.useEffect(() => {
         if (isOpen && record) {
-            const [year, month, day] = record.date.split('-').map(Number);
             form.reset({
                 ...record,
-                date: new Date(year, month - 1, day),
+                date: new Date(record.date.replace(/-/g, '/')),
                 photo: undefined,
             });
         }
@@ -232,7 +273,6 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
         moistureLevel: "",
         photo: null
     });
-    // Manually reset the file input
     const photoInput = document.querySelector('input[name="photo"]') as HTMLInputElement | null;
     if (photoInput) {
         photoInput.value = '';
@@ -241,7 +281,6 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
 
   const panelOpen = !!plant;
 
-  // Reset form when plant changes
   React.useEffect(() => {
     form.reset({
       date: new Date(),
@@ -252,11 +291,8 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     });
   }, [plant, form]);
   
-  const formatDisplayDate = (dateString: string) => {
-    // Dates are stored as 'YYYY-MM-DD'. We need to parse this as a local date, not UTC.
-    // The issue is that `new Date('YYYY-MM-DD')` can be interpreted as UTC midnight,
-    // which can be the previous day in some timezones.
-    // Adding T00:00 (without Z) makes it explicitly local midnight.
+  const formatDisplayDate = (dateString: string | undefined) => {
+    if (!dateString) return "N/A";
     return format(new Date(`${dateString}T00:00`), "PPP");
   }
 
@@ -266,7 +302,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
       className={cn(
         "bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-all duration-300 ease-in-out z-20",
         "w-96 shrink-0",
-        panelOpen ? 'w-96' : 'w-0'
+        {"translate-x-0": panelOpen, "translate-x-full w-0": !panelOpen}
       )}
     >
       {plant && category && (
@@ -276,13 +312,16 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                 <div>
                     <h2 className="text-lg font-semibold flex items-center gap-2">
                         {plant.type} ({plant.label})
-                        <EditPlantTypeModal plant={plant} onUpdatePlant={onUpdatePlant}>
+                        <EditPlantDetailsModal plant={plant} onUpdatePlant={onUpdatePlant}>
                             <Button variant="ghost" size="icon" className="h-6 w-6">
                                 <Edit className="h-4 w-4" />
                             </Button>
-                        </EditPlantTypeModal>
+                        </EditPlantDetailsModal>
                     </h2>
                     <p className="text-sm" style={{ color: category.color }}>{category.name}</p>
+                     <p className="text-xs text-muted-foreground mt-1">
+                        Next Fertilization: {formatDisplayDate(plant.nextScheduledFertilizationDate)}
+                    </p>
                 </div>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
