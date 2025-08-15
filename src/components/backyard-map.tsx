@@ -115,7 +115,7 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
                 onClick={(e) => handleClick(e, plant.id)}
                 >
                 <circle
-                    r="2.5"
+                    r="2.2"
                     fill={category.color}
                     stroke="white"
                     strokeWidth="0.3"
@@ -125,7 +125,7 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
                     }}
                 />
                 <circle
-                    r="2.5"
+                    r="2.2"
                     fill="transparent"
                     stroke={selectedPlantId === plant.id ? 'hsl(var(--accent))' : 'transparent'}
                     strokeWidth="0.5"
@@ -136,7 +136,7 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
                     dy="0.05em"
                     textAnchor="middle"
                     alignmentBaseline="middle"
-                    fontSize="1.8"
+                    fontSize="1.6"
                     fontWeight="bold"
                     fill="white"
                     className="pointer-events-none select-none"
