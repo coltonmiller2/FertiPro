@@ -5,6 +5,7 @@ export interface Record {
   notes: string;
   phLevel: string;
   moistureLevel: string;
+  photoDataUri?: string;
 }
 
 export interface Plant {

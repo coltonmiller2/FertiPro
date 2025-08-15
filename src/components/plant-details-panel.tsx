@@ -2,11 +2,12 @@
 "use client";
 
 import * as React from 'react';
-import { X, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { X, Trash2, Calendar as CalendarIcon, Edit, Image as ImageIcon } from 'lucide-react';
 import { format } from "date-fns"
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from 'next/image';
 
 import type { Plant, PlantCategory, Record as PlantRecord } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -36,19 +46,96 @@ interface PlantDetailsPanelProps {
   plant: Plant | null;
   category: PlantCategory | null;
   onClose: () => void;
-  onUpdatePlant: (plantId: string, record: Omit<PlantRecord, 'id'>) => void;
+  onUpdatePlant: (plantId: string, record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => void;
+  onUpdateRecord: (plantId: string, record: PlantRecord, photoFile?: File) => void;
   onDeletePlant: (plantId: string) => void;
 }
 
 const recordFormSchema = z.object({
+  id: z.number().optional(),
   date: z.date({ required_error: "A date is required." }),
   treatment: z.string().min(1, "Treatment is required."),
   notes: z.string().optional(),
   phLevel: z.string().optional(),
   moistureLevel: z.string().optional(),
+  photo: z.any().optional(),
 });
 
-export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onDeletePlant }: PlantDetailsPanelProps) {
+function fileToDataUri(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+}
+
+const EditRecordModal: React.FC<{
+    record: PlantRecord;
+    plantId: string;
+    onUpdateRecord: (plantId: string, record: PlantRecord, photoFile?: File) => void;
+    children: React.ReactNode;
+}> = ({ record, plantId, onUpdateRecord, children }) => {
+    const [isOpen, setIsOpen] = React.useState(false);
+
+    const form = useForm<z.infer<typeof recordFormSchema>>({
+        resolver: zodResolver(recordFormSchema),
+        defaultValues: {
+            ...record,
+            date: new Date(record.date),
+        },
+    });
+    
+    const photoRef = form.register("photo");
+
+    async function onSubmit(values: z.infer<typeof recordFormSchema>) {
+        const photoFile = values.photo?.[0];
+        const updatedRecord = {
+            ...record,
+            ...values,
+            date: format(values.date, "yyyy-MM-dd"),
+        };
+        onUpdateRecord(plantId, updatedRecord, photoFile);
+        setIsOpen(false);
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Record</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        {/* Form fields are the same as the main form, pre-filled */}
+                        <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="treatment" render={({ field }) => ( <FormItem><FormLabel>Treatment</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                        <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem><FormLabel>Notes</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField control={form.control} name="phLevel" render={({ field }) => ( <FormItem><FormLabel>pH Level</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                            <FormField control={form.control} name="moistureLevel" render={({ field }) => ( <FormItem><FormLabel>Moisture %</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                        </div>
+                         <FormField control={form.control} name="photo" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Photo</FormLabel>
+                                <FormControl><Input type="file" accept="image/*" {...photoRef} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}/>
+                        <DialogFooter>
+                            <DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose>
+                            <Button type="submit">Save Changes</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+
+export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onUpdateRecord, onDeletePlant }: PlantDetailsPanelProps) {
   
   const form = useForm<z.infer<typeof recordFormSchema>>({
     resolver: zodResolver(recordFormSchema),
@@ -61,18 +148,24 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
     },
   });
 
-  function onSubmit(values: z.infer<typeof recordFormSchema>) {
+  const photoRef = form.register("photo");
+
+  async function onSubmit(values: z.infer<typeof recordFormSchema>) {
     if (!plant) return;
+    const photoFile = values.photo?.[0];
+
     onUpdatePlant(plant.id, {
       ...values,
       date: format(values.date, "yyyy-MM-dd"),
-    });
+    }, photoFile);
+
     form.reset({
         date: new Date(),
         treatment: "",
         notes: "",
         phLevel: "",
         moistureLevel: "",
+        photo: null
     });
   }
 
@@ -180,6 +273,13 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
                           )}
                         />
                       </div>
+                       <FormField control={form.control} name="photo" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Attach Photo</FormLabel>
+                                <FormControl><Input type="file" accept="image/*" {...photoRef} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}/>
                       <Button type="submit" className="w-full">Add Record</Button>
                     </form>
                   </Form>
@@ -192,15 +292,29 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
                 <h3 className="text-base font-semibold mb-2">History</h3>
                 <div className="space-y-3">
                   {plant.records.length > 0 ? (
-                    plant.records.map((record, index) => (
+                    plant.records.map((record) => (
                       <Card key={record.id} className="text-sm">
                         <CardContent className="pt-4">
-                          <p><strong>Date:</strong> {format(new Date(record.date), "PPP")}</p>
-                          <p><strong>Treatment:</strong> {record.treatment}</p>
-                          {record.notes && <p><strong>Notes:</strong> {record.notes}</p>}
-                          {(record.phLevel || record.moistureLevel) && <Separator className="my-2" />}
-                          {record.phLevel && <p><strong>pH:</strong> {record.phLevel}</p>}
-                          {record.moistureLevel && <p><strong>Moisture:</strong> {record.moistureLevel}%</p>}
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p><strong>Date:</strong> {format(new Date(record.date), "PPP")}</p>
+                                    <p><strong>Treatment:</strong> {record.treatment}</p>
+                                    {record.notes && <p><strong>Notes:</strong> {record.notes}</p>}
+                                    {(record.phLevel || record.moistureLevel) && <Separator className="my-2" />}
+                                    {record.phLevel && <p><strong>pH:</strong> {record.phLevel}</p>}
+                                    {record.moistureLevel && <p><strong>Moisture:</strong> {record.moistureLevel}%</p>}
+                                </div>
+                                 <EditRecordModal record={record} plantId={plant.id} onUpdateRecord={onUpdateRecord}>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                </EditRecordModal>
+                            </div>
+                            {record.photoDataUri && (
+                                <div className="mt-2">
+                                    <Image src={record.photoDataUri} alt={`Record photo for ${record.date}`} width={80} height={80} className="rounded-md object-cover" />
+                                </div>
+                            )}
                         </CardContent>
                       </Card>
                     ))

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -5,6 +6,15 @@ import { initialData } from '@/lib/initial-data';
 import type { BackyardLayout, Plant, Record as PlantRecord } from '@/lib/types';
 
 const STORAGE_KEY = 'backyardBountyData';
+
+function fileToDataUri(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 export function useBackyardData() {
   const [layout, setLayout] = useState<BackyardLayout | null>(null);
@@ -97,12 +107,13 @@ export function useBackyardData() {
     }
   }, [layout, updateLayout]);
   
-  const addRecordToPlant = useCallback((plantId: string, record: Omit<PlantRecord, 'id'>) => {
+  const addRecordToPlant = useCallback(async (plantId: string, record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => {
     if (!layout) return;
 
     const newRecord: PlantRecord = {
         ...record,
         id: Date.now(),
+        photoDataUri: photoFile ? await fileToDataUri(photoFile) : undefined,
     };
 
     const newLayout = { ...layout };
@@ -122,6 +133,33 @@ export function useBackyardData() {
     }
   }, [layout, updateLayout]);
 
+  const updateRecordInPlant = useCallback(async (plantId: string, updatedRecord: PlantRecord, photoFile?: File) => {
+    if (!layout) return;
+    
+    if (photoFile) {
+        updatedRecord.photoDataUri = await fileToDataUri(photoFile);
+    }
 
-  return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant };
+    const newLayout = { ...layout };
+    let updated = false;
+    for (const categoryKey in newLayout) {
+        const category = newLayout[categoryKey];
+        const plant = category.plants.find(p => p.id === plantId);
+        if (plant) {
+            const recordIndex = plant.records.findIndex(r => r.id === updatedRecord.id);
+            if (recordIndex !== -1) {
+                plant.records[recordIndex] = updatedRecord;
+                plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                updated = true;
+                break;
+            }
+        }
+    }
+    if (updated) {
+        updateLayout(newLayout);
+    }
+  }, [layout, updateLayout]);
+
+
+  return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, updateRecordInPlant };
 }

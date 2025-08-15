@@ -12,7 +12,7 @@ import { BackyardMap } from '@/components/backyard-map';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function BackyardPage() {
-  const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant } = useBackyardData();
+  const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, updateRecordInPlant } = useBackyardData();
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
 
@@ -34,8 +34,12 @@ export function BackyardPage() {
     setSelectedPlantId(plantId);
   };
   
-  const handleUpdatePlant = (plantId: string, record: Omit<PlantRecord, 'id'>) => {
-    addRecordToPlant(plantId, record);
+  const handleAddRecord = (plantId: string, record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => {
+    addRecordToPlant(plantId, record, photoFile);
+  };
+
+  const handleUpdateRecord = (plantId: string, record: PlantRecord, photoFile?: File) => {
+    updateRecordInPlant(plantId, record, photoFile);
   };
 
   const handleDeletePlant = (plantId: string) => {
@@ -45,10 +49,20 @@ export function BackyardPage() {
 
   if (loading || !layout) {
     return (
-        <div className="w-full h-screen p-4 flex flex-col gap-4 bg-background">
-            <Skeleton className="h-16 w-1/3" />
-            <Skeleton className="flex-1 w-full" />
-        </div>
+      <div className="flex h-screen w-screen flex-col bg-background font-sans overflow-hidden">
+         <header className="flex h-14 items-center justify-between border-b bg-background/95 backdrop-blur-sm px-4 lg:px-6 shrink-0 z-10">
+          <div className="flex items-center gap-2 font-semibold">
+            <Leaf className="h-6 w-6 text-primary" />
+            <span>Backyard Bounty</span>
+          </div>
+          <Skeleton className="h-10 w-28" />
+        </header>
+        <main className="flex-1 relative">
+            <div className="relative w-full h-full p-4 md:p-8 flex items-center justify-center">
+              <Skeleton className="w-full h-full max-w-[1000px] max-h-[1000px] aspect-square shadow-2xl rounded-lg"/>
+            </div>
+        </main>
+      </div>
     );
   }
 
@@ -75,7 +89,8 @@ export function BackyardPage() {
           plant={selectedPlant}
           category={selectedPlantCategory}
           onClose={() => handleSelectPlant(null)}
-          onUpdatePlant={handleUpdatePlant}
+          onUpdatePlant={handleAddRecord}
+          onUpdateRecord={handleUpdateRecord}
           onDeletePlant={handleDeletePlant}
         />
       </main>
