@@ -72,17 +72,12 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
   
   return (
     <div className="relative w-full h-full p-4 md:p-8 flex items-center justify-center">
-       <div className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square shadow-2xl rounded-lg overflow-hidden bg-white">
-        
-        {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat bg-center"
-          style={{
-            backgroundImage: `url('https://i.imgur.com/7wkMw77.png')`,
-          }}
-        />
-
-        {/* Interactive Plant Overlay SVG */}
+      <div
+        className="relative w-full max-w-[1000px] aspect-square bg-white shadow-2xl rounded-lg bg-contain bg-no-repeat bg-center"
+        style={{
+          backgroundImage: `url('https://i.imgur.com/7wkMw77.png')`,
+        }}
+      >
         <svg
             ref={svgRef}
             viewBox="0 0 100 100"

@@ -287,7 +287,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
 
   return (
     <div
-      className="h-full w-96 shrink-0 bg-background/95 backdrop-blur-sm border-l border-border shadow-lg z-20"
+      className="absolute top-0 right-0 h-full w-96 bg-background border-l border-border shadow-lg z-20"
     >
       {plant && category && (
         <div className="flex flex-col h-full">

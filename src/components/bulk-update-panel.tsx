@@ -87,7 +87,7 @@ export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: Bu
 
   return (
     <div
-      className="h-full w-96 shrink-0 bg-background/95 backdrop-blur-sm border-l border-border shadow-lg z-20"
+      className="absolute top-0 right-0 h-full w-96 bg-background border-l border-border shadow-lg z-20"
     >
       {selectedPlants.length > 0 && (
         <div className="flex flex-col h-full">
