@@ -27,7 +27,7 @@ export default function RootLayout({
                 position: 'fixed',
                 inset: 0,
                 zIndex: -10,
-                backgroundImage: `url('https://i.imgur.com/374tW0z.jpeg')`,
+                backgroundImage: `url('https://i.imgur.com/IMYTjfv.jpeg')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 filter: 'brightness(70%) blur(4px)',
