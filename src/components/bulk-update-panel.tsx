@@ -93,7 +93,7 @@ export function BulkUpdatePanel({ isOpen, selectedPlants, onClose, onBulkAddReco
       className={cn(
         "bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-transform duration-500 ease-in-out z-20 absolute top-0 right-0 h-full",
         "w-96 shrink-0",
-        {"translate-x-0": isOpen, "translate-x-full": !isOpen}
+        isOpen ? "translate-x-0" : "translate-x-full"
       )}
     >
       {selectedPlants.length > 0 && (
