@@ -92,6 +92,9 @@ const EditRecordModal: React.FC<{
             form.reset({
                 ...record,
                 date: new Date(record.date.replace(/-/g, '/')),
+                phLevel: record.phLevel || '',
+                moistureLevel: record.moistureLevel || '',
+                trunkDiameter: record.trunkDiameter || '',
                 nextScheduledFertilizationDate: nextDate,
                 photo: undefined,
             });
