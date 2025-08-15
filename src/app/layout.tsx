@@ -30,7 +30,7 @@ export default function RootLayout({
                 backgroundImage: `url('https://i.ibb.co/hZVHXwK/background.png')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                filter: 'brightness(100%)',
+                filter: 'brightness(70%) blur(4px)',
             }}
         />
         {children}
