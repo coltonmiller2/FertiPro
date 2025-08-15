@@ -3,8 +3,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { Leaf, Plus } from 'lucide-react';
-import Image from 'next/image';
-
 import { useBackyardData } from '@/hooks/use-backyard-data';
 import type { Plant, PlantCategory, Record as PlantRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -38,15 +36,12 @@ export function BackyardPage() {
   
   const handleUpdatePlant = (plantId: string, record: Omit<PlantRecord, 'id'>) => {
     addRecordToPlant(plantId, record);
-    // The hook will update the layout, and useMemo will recalculate the selectedPlant
-    // which will trigger a re-render of the PlantDetailsPanel.
   };
 
   const handleDeletePlant = (plantId: string) => {
     removePlant(plantId);
     setSelectedPlantId(null);
   };
-
 
   if (loading || !layout) {
     return (
@@ -58,7 +53,7 @@ export function BackyardPage() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-transparent font-sans overflow-hidden">
+    <div className="flex h-screen w-screen flex-col bg-background font-sans overflow-hidden">
       <header className="flex h-14 items-center justify-between border-b bg-background/95 backdrop-blur-sm px-4 lg:px-6 shrink-0 z-10">
         <div className="flex items-center gap-2 font-semibold">
           <Leaf className="h-6 w-6 text-primary" />

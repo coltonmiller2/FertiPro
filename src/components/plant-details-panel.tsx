@@ -92,7 +92,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
   return (
     <div
       className={cn(
-        "absolute top-0 right-0 h-full w-full max-w-sm bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-transform duration-300 ease-in-out",
+        "absolute top-0 right-0 h-full w-full max-w-sm bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-transform duration-300 ease-in-out z-20",
         panelOpen ? 'translate-x-0' : 'translate-x-full'
       )}
     >

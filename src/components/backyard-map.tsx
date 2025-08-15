@@ -9,7 +9,7 @@ import Image from 'next/image';
 interface BackyardMapProps {
   layout: BackyardLayout;
   selectedPlantId: string | null;
-  onSelectPlant: (plantId: string) => void;
+  onSelectPlant: (plantId: string | null) => void;
   onUpdatePlantPosition: (plantId:string, position: { x: number; y: number }) => void;
 }
 
@@ -62,13 +62,18 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
       setTimeout(() => setDraggingPlant(null), 50);
     }
   };
-
+  
   const handleClick = (e: MouseEvent, plantId: string) => {
     if (draggingPlant) {
       e.stopPropagation();
       return;
     }
-    onSelectPlant(plantId);
+    // Toggle selection
+    if (selectedPlantId === plantId) {
+      onSelectPlant(null); 
+    } else {
+      onSelectPlant(plantId);
+    }
   };
   
   return (
