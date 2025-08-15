@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import type { BackyardLayout, Plant } from "@/lib/types";
 
 interface TableViewProps {
-  layout: BackyardLayout;
+  layout: Omit<BackyardLayout, 'version'>;
   onSelectPlant: (plantId: string | null) => void;
 }
 
@@ -22,6 +22,10 @@ export function TableView({ layout, onSelectPlant }: TableViewProps) {
       }))
     );
   }, [layout]);
+
+  const formatDisplayDate = (dateString: string) => {
+    return format(new Date(`${dateString}T00:00:00`), "PPP");
+  }
 
   return (
     <div className="p-4 md:p-8">
@@ -51,7 +55,7 @@ export function TableView({ layout, onSelectPlant }: TableViewProps) {
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                {latestRecord ? format(new Date(latestRecord.date), "PPP") : "N/A"}
+                                {latestRecord ? formatDisplayDate(latestRecord.date) : "N/A"}
                             </TableCell>
                             <TableCell>
                                 {latestRecord ? latestRecord.treatment : "N/A"}

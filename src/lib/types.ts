@@ -23,5 +23,6 @@ export interface PlantCategory {
 }
 
 export interface BackyardLayout {
-  [key:string]: PlantCategory;
+  version?: number;
+  [key:string]: PlantCategory | number | undefined;
 }

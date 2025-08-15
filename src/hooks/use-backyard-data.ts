@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { initialData } from '@/lib/initial-data';
-import type { BackyardLayout, Plant, Record as PlantRecord } from '@/lib/types';
+import type { BackyardLayout, Plant, Record as PlantRecord, PlantCategory } from '@/lib/types';
 
 const STORAGE_KEY = 'backyardBountyData';
 
@@ -16,21 +16,36 @@ function fileToDataUri(file: File): Promise<string> {
   });
 }
 
+function isPlantCategory(value: any): value is PlantCategory {
+    return value && typeof value === 'object' && 'name' in value && 'color' in value && Array.isArray(value.plants);
+}
+
+
 export function useBackyardData() {
   const [layout, setLayout] = useState<BackyardLayout | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
-      const storedData = localStorage.getItem(STORAGE_KEY);
-      if (storedData) {
-        setLayout(JSON.parse(storedData));
+      const storedDataJSON = localStorage.getItem(STORAGE_KEY);
+      if (storedDataJSON) {
+        const storedData: BackyardLayout = JSON.parse(storedDataJSON);
+        // Version check
+        if (storedData.version === initialData.version) {
+          setLayout(storedData);
+        } else {
+          // Version mismatch, use initialData and update localStorage
+          setLayout(initialData);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
+        }
       } else {
+        // No data in localStorage, use initialData
         setLayout(initialData);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
       }
     } catch (error) {
       console.error("Failed to access localStorage or parse data:", error);
+      // Fallback to initialData
       setLayout(initialData);
     } finally {
       setLoading(false);
@@ -50,12 +65,15 @@ export function useBackyardData() {
     if (!layout) return;
     const newLayout = structuredClone(layout);
     for (const categoryKey in newLayout) {
-      const plant = newLayout[categoryKey].plants.find(p => p.id === plantId);
-      if (plant) {
-        plant.position = newPosition;
-        updateLayout(newLayout);
-        return;
-      }
+        const category = newLayout[categoryKey];
+        if (isPlantCategory(category)) {
+            const plant = category.plants.find(p => p.id === plantId);
+            if (plant) {
+                plant.position = newPosition;
+                updateLayout(newLayout);
+                return;
+            }
+        }
     }
   }, [layout, updateLayout]);
 
@@ -64,7 +82,7 @@ export function useBackyardData() {
 
     const newLayout = structuredClone(layout);
     const category = newLayout[categoryKey];
-    if (!category) return;
+    if (!isPlantCategory(category)) return;
 
     const existingLabels = category.plants.map(p => p.label);
     let newLabel = 'A';
@@ -88,12 +106,15 @@ export function useBackyardData() {
     if (!layout) return;
     const newLayout = structuredClone(layout);
     for (const categoryKey in newLayout) {
-      const initialCount = newLayout[categoryKey].plants.length;
-      newLayout[categoryKey].plants = newLayout[categoryKey].plants.filter(p => p.id !== plantId);
-      if (newLayout[categoryKey].plants.length < initialCount) {
-        updateLayout(newLayout);
-        return;
-      }
+        const category = newLayout[categoryKey];
+        if (isPlantCategory(category)) {
+            const initialCount = category.plants.length;
+            category.plants = category.plants.filter(p => p.id !== plantId);
+            if (category.plants.length < initialCount) {
+                updateLayout(newLayout);
+                return;
+            }
+        }
     }
   }, [layout, updateLayout]);
   
@@ -108,13 +129,16 @@ export function useBackyardData() {
 
     const newLayout = structuredClone(layout);
     for (const categoryKey in newLayout) {
-      const plant = newLayout[categoryKey].plants.find(p => p.id === plantId);
-      if (plant) {
-        plant.records.push(newRecord);
-        plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        updateLayout(newLayout);
-        return;
-      }
+        const category = newLayout[categoryKey];
+        if (isPlantCategory(category)) {
+            const plant = category.plants.find(p => p.id === plantId);
+            if (plant) {
+                plant.records.push(newRecord);
+                plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                updateLayout(newLayout);
+                return;
+            }
+        }
     }
   }, [layout, updateLayout]);
 
@@ -131,11 +155,14 @@ export function useBackyardData() {
     let a_category: string | undefined;
 
     for (const categoryKey in newLayout) {
-        const plant = newLayout[categoryKey].plants.find(p => p.id === plantId);
-        if (plant) {
-            a_plant = plant;
-            a_category = categoryKey;
-            break;
+        const category = newLayout[categoryKey];
+        if (isPlantCategory(category)) {
+            const plant = category.plants.find(p => p.id === plantId);
+            if (plant) {
+                a_plant = plant;
+                a_category = categoryKey;
+                break;
+            }
         }
     }
 
@@ -153,12 +180,15 @@ export function useBackyardData() {
     if (!layout) return;
     const newLayout = structuredClone(layout);
     for (const categoryKey in newLayout) {
-      const plantIndex = newLayout[categoryKey].plants.findIndex(p => p.id === plantId);
-      if (plantIndex !== -1) {
-        newLayout[categoryKey].plants[plantIndex] = { ...newLayout[categoryKey].plants[plantIndex], ...updates };
-        updateLayout(newLayout);
-        return;
-      }
+        const category = newLayout[categoryKey];
+        if (isPlantCategory(category)) {
+            const plantIndex = category.plants.findIndex(p => p.id === plantId);
+            if (plantIndex !== -1) {
+                category.plants[plantIndex] = { ...category.plants[plantIndex], ...updates };
+                updateLayout(newLayout);
+                return;
+            }
+        }
     }
   }, [layout, updateLayout]);
 

@@ -1,6 +1,7 @@
 import type { BackyardLayout } from './types';
 
 export const initialData: BackyardLayout = {
+  version: 2,
   queenAndKingPalms: {
     name: 'Queen and King Palms',
     color: '#DC2626',

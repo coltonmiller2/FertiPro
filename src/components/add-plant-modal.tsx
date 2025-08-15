@@ -28,7 +28,7 @@ interface AddPlantModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddPlant: (categoryKey: string, plantType: string) => void;
-  layout: BackyardLayout;
+  layout: Omit<BackyardLayout, 'version'>;
 }
 
 const formSchema = z.object({

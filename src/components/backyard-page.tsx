@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { Leaf, Plus, Map, Table } from 'lucide-react';
 import { useBackyardData } from '@/hooks/use-backyard-data';
-import type { Plant, PlantCategory, Record as PlantRecord } from '@/lib/types';
+import type { Plant, PlantCategory, Record as PlantRecord, BackyardLayout } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { AddPlantModal } from '@/components/add-plant-modal';
 import { PlantDetailsPanel } from '@/components/plant-details-panel';
@@ -12,11 +12,31 @@ import { BackyardMap } from '@/components/backyard-map';
 import { TableView } from '@/components/table-view';
 import { Skeleton } from '@/components/ui/skeleton';
 
+function isPlantCategory(value: any): value is PlantCategory {
+    return value && typeof value === 'object' && 'name' in value && 'color' in value && Array.isArray(value.plants);
+}
+
+const getFilteredLayout = (layout: BackyardLayout | null): Omit<BackyardLayout, 'version'> => {
+    if (!layout) return {};
+    const filteredLayout: Omit<BackyardLayout, 'version'> = {};
+    for (const key in layout) {
+        if (key !== 'version') {
+            const category = layout[key];
+            if (isPlantCategory(category)) {
+               filteredLayout[key] = category;
+            }
+        }
+    }
+    return filteredLayout;
+}
+
 export function BackyardPage() {
   const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, updateRecordInPlant, updatePlant } = useBackyardData();
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
+
+  const filteredLayout = useMemo(() => getFilteredLayout(layout), [layout]);
 
   const { selectedPlant, selectedPlantCategory } = useMemo(() => {
     if (!selectedPlantId || !layout) {
@@ -24,9 +44,11 @@ export function BackyardPage() {
     }
     for (const categoryKey in layout) {
       const category = layout[categoryKey];
-      const plant = category.plants.find(p => p.id === selectedPlantId);
-      if (plant) {
-        return { selectedPlant: plant, selectedPlantCategory: category };
+      if (isPlantCategory(category)) {
+          const plant = category.plants.find(p => p.id === selectedPlantId);
+          if (plant) {
+            return { selectedPlant: plant, selectedPlantCategory: category };
+          }
       }
     }
     return { selectedPlant: null, selectedPlantCategory: null };
@@ -96,13 +118,13 @@ export function BackyardPage() {
       <main className="flex-1 relative overflow-auto">
         {viewMode === 'map' ? (
             <BackyardMap
-                layout={layout}
+                layout={filteredLayout}
                 selectedPlantId={selectedPlantId}
                 onSelectPlant={handleSelectPlant}
                 onUpdatePlantPosition={updatePlantPosition}
             />
         ) : (
-            <TableView layout={layout} onSelectPlant={handleSelectPlant} />
+            <TableView layout={filteredLayout} onSelectPlant={handleSelectPlant} />
         )}
         <PlantDetailsPanel
           plant={selectedPlant}
@@ -118,7 +140,7 @@ export function BackyardPage() {
         isOpen={isAddModalOpen}
         onClose={() => setAddModalOpen(false)}
         onAddPlant={addPlant}
-        layout={layout}
+        layout={filteredLayout}
       />
     </div>
   );

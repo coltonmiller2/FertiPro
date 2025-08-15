@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 interface BackyardMapProps {
-  layout: BackyardLayout;
+  layout: Omit<BackyardLayout, 'version'>;
   selectedPlantId: string | null;
   onSelectPlant: (plantId: string | null) => void;
   onUpdatePlantPosition: (plantId:string, position: { x: number; y: number }) => void;
