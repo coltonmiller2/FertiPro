@@ -37,11 +37,17 @@ export const initialData: BackyardLayout = {
     ]
   },
   shrubs: {
-    name: 'Shrubs and Pygmy Palms',
+    name: 'Shrubs',
     color: '#6366F1',
     plants: [
        { id: 'shb-a', label: 'A', type: 'Shrub', position: { x: 22, y: 80 }, records: [] },
-       { id: 'shb-b', label: 'B', type: 'Pygmy Palm', position: { x: 25, y: 30 }, records: [] }
+    ]
+  },
+  tropicals: {
+    name: 'Tropicals',
+    color: '#A855F7',
+    plants: [
+        { id: 'trp-a', label: 'A', type: 'Pygmy Palm', position: { x: 25, y: 30 }, records: [] }
     ]
   }
 };
