@@ -27,7 +27,7 @@ export default function RootLayout({
                 position: 'fixed',
                 inset: 0,
                 zIndex: -10,
-                backgroundImage: `url('https://images.unsplash.com/photo-1585159491873-a61649363842?q=80&w=2070&auto=format&fit=crop')`,
+                backgroundImage: `url('https://i.imgur.com/374tW0z.jpeg')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 filter: 'brightness(70%) blur(4px)',
