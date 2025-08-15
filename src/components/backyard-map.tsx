@@ -72,7 +72,7 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   
   return (
     <div className="relative w-full h-full p-4 md:p-8 flex items-center justify-center">
-       <div className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square shadow-2xl rounded-lg overflow-hidden bg-background/30 backdrop-blur-sm">
+       <div className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square shadow-2xl rounded-lg overflow-hidden bg-transparent">
         
         {/* Interactive Plant Overlay SVG */}
         <svg

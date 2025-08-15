@@ -27,10 +27,10 @@ export default function RootLayout({
                 position: 'fixed',
                 inset: 0,
                 zIndex: -10,
-                backgroundImage: `url('https://images.unsplash.com/photo-1588382332194-2ce6de75f362?q=80&w=2070&auto=format&fit=crop')`,
+                backgroundImage: `url('https://i.ibb.co/hZVHXwK/background.png')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                filter: 'brightness(75%)',
+                filter: 'brightness(100%)',
             }}
         />
         {children}
