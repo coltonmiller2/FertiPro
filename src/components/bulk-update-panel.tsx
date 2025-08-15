@@ -91,12 +91,12 @@ export function BulkUpdatePanel({ isOpen, selectedPlants, onClose, onBulkAddReco
   return (
     <div
       className={cn(
-        "bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-all duration-300 ease-in-out z-20",
+        "bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-transform duration-500 ease-in-out z-20 absolute top-0 right-0 h-full",
         "w-96 shrink-0",
-        {"translate-x-0": isOpen, "translate-x-full w-0": !isOpen}
+        {"translate-x-0": isOpen, "translate-x-full": !isOpen}
       )}
     >
-      {isOpen && (
+      {selectedPlants.length > 0 && (
         <div className="flex flex-col h-full">
           <header className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-2">
