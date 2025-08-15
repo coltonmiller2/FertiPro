@@ -4,16 +4,15 @@
 import React, { useState, useRef, MouseEvent } from 'react';
 import type { BackyardLayout, Plant } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 
 interface BackyardMapProps {
   layout: Omit<BackyardLayout, 'version'>;
-  selectedPlantId: string | null;
-  onSelectPlant: (plantId: string | null) => void;
+  selectedPlantIds: string[];
+  onSelectPlant: (plantId: string | null, isMultiSelect: boolean) => void;
   onUpdatePlantPosition: (plantId:string, position: { x: number; y: number }) => void;
 }
 
-export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePlantPosition }: BackyardMapProps) {
+export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdatePlantPosition }: BackyardMapProps) {
   const [draggingPlant, setDraggingPlant] = useState<{ id: string; offset: { x: number; y: number } } | null>(null);
   const dragHappened = useRef(false);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -28,7 +27,6 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   };
 
   const handleMouseDown = (e: MouseEvent, plant: Plant) => {
-    e.preventDefault();
     dragHappened.current = false;
     const point = getSVGPoint(e);
     if (!point) return;
@@ -65,12 +63,11 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   
   const handleClick = (e: MouseEvent, plantId: string) => {
     if (dragHappened.current) {
-      // If a drag happened, reset the flag and do nothing.
       dragHappened.current = false;
       return;
     }
-    // Otherwise, it was a click, so select the plant.
-    onSelectPlant(plantId);
+    const isMultiSelect = e.ctrlKey || e.metaKey;
+    onSelectPlant(plantId, isMultiSelect);
   };
   
   return (
@@ -106,7 +103,9 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
             </defs>
 
             {Object.values(layout).map((category) =>
-            category.plants.map((plant) => (
+            category.plants.map((plant) => {
+              const isSelected = selectedPlantIds.includes(plant.id);
+              return (
                 <g
                 key={plant.id}
                 transform={`translate(${plant.position.x}, ${plant.position.y})`}
@@ -119,15 +118,15 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
                     fill={category.color}
                     stroke="white"
                     strokeWidth="0.3"
-                    className={cn("transition-all", selectedPlantId === plant.id && "stroke-accent" )}
+                    className={cn("transition-all", isSelected && "stroke-accent" )}
                     style={{
-                        filter: selectedPlantId === plant.id ? 'drop-shadow(0 0 1px hsl(var(--accent)))' : 'drop-shadow(0px 1px 1px rgba(0,0,0,0.3))'
+                        filter: isSelected ? 'drop-shadow(0 0 1px hsl(var(--accent)))' : 'drop-shadow(0px 1px 1px rgba(0,0,0,0.3))'
                     }}
                 />
                 <circle
                     r="2.2"
                     fill="transparent"
-                    stroke={selectedPlantId === plant.id ? 'hsl(var(--accent))' : 'transparent'}
+                    stroke={isSelected ? 'hsl(var(--accent))' : 'transparent'}
                     strokeWidth="0.5"
                 />
                 <text
@@ -144,7 +143,8 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
                     {plant.label}
                 </text>
                 </g>
-            ))
+              )
+            })
             )}
         </svg>
       </div>

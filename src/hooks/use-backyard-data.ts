@@ -142,6 +142,32 @@ export function useBackyardData() {
     }
   }, [layout, updateLayout]);
 
+  const addRecordToPlants = useCallback(async (plantIds: string[], record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => {
+    if (!layout) return;
+
+    const photoDataUri = photoFile ? await fileToDataUri(photoFile) : undefined;
+    const newLayout = structuredClone(layout);
+
+    for (const categoryKey in newLayout) {
+        const category = newLayout[categoryKey];
+        if (isPlantCategory(category)) {
+            category.plants.forEach(plant => {
+                if (plantIds.includes(plant.id)) {
+                    const newRecord: PlantRecord = {
+                        ...record,
+                        id: Date.now() + Math.random(), // Add random to avoid collision if processed at same ms
+                        photoDataUri: photoDataUri,
+                    };
+                    plant.records.push(newRecord);
+                    plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                }
+            });
+        }
+    }
+    updateLayout(newLayout);
+  }, [layout, updateLayout]);
+
+
   const updateRecordInPlant = useCallback(async (plantId: string, updatedRecord: PlantRecord, photoFile?: File) => {
     if (!layout) return;
     
@@ -185,5 +211,5 @@ export function useBackyardData() {
   }, [layout, updateLayout]);
 
 
-  return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, updateRecordInPlant, updatePlant };
+  return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant };
 }

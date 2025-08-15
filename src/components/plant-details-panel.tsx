@@ -68,6 +68,14 @@ const plantDetailsFormSchema = z.object({
   nextScheduledFertilizationDate: z.date().optional().nullable(),
 });
 
+const formatDisplayDate = (dateString: string | undefined) => {
+  if (!dateString) return "N/A";
+  // The string is in 'yyyy-MM-dd' format. Create a Date object that treats it as local time.
+  const date = new Date(dateString.replace(/-/g, '/'));
+  if (isNaN(date.getTime())) return 'Invalid Date';
+  return format(date, "PPP");
+}
+
 const EditPlantDetailsModal: React.FC<{
     plant: Plant;
     onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void;
@@ -82,7 +90,7 @@ const EditPlantDetailsModal: React.FC<{
     React.useEffect(() => {
         if (isOpen) {
             const nextDate = plant.nextScheduledFertilizationDate 
-                ? new Date(`${plant.nextScheduledFertilizationDate}T00:00`)
+                ? new Date(plant.nextScheduledFertilizationDate.replace(/-/g, '/'))
                 : null;
 
             form.reset({ 
@@ -291,11 +299,6 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     });
   }, [plant, form]);
   
-  const formatDisplayDate = (dateString: string | undefined) => {
-    if (!dateString) return "N/A";
-    return format(new Date(`${dateString}T00:00`), "PPP");
-  }
-
 
   return (
     <div

@@ -11,6 +11,7 @@ import {
   useReactTable,
   SortingState,
   ColumnFiltersState,
+  RowSelectionState,
 } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { ArrowUpDown } from "lucide-react";
@@ -20,20 +21,49 @@ import { Badge } from "@/components/ui/badge";
 import type { BackyardLayout, Plant } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { Checkbox } from "./ui/checkbox";
 
 interface TableViewProps {
   layout: Omit<BackyardLayout, 'version'>;
+  selectedPlantIds: string[];
   onSelectPlant: (plantId: string | null) => void;
+  setSelectedPlantIds: (ids: string[]) => void;
 }
 
 type PlantRow = Plant & { categoryName: string; categoryColor: string };
 
 const formatDisplayDate = (dateString?: string) => {
     if (!dateString) return "N/A";
-    return format(new Date(`${dateString}T00:00:00`), "PPP");
+    const date = new Date(dateString);
+    // This check is necessary because `new Date('invalid-string')` doesn't throw but returns an invalid date.
+    if (isNaN(date.getTime())) return "N/A";
+    // Adjust for timezone by getting the UTC date parts
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth();
+    const day = date.getUTCDate();
+    return format(new Date(year, month, day), "PPP");
 }
 
 export const columns: ColumnDef<PlantRow>[] = [
+    {
+        id: "select",
+        header: ({ table }) => (
+          <Checkbox
+            checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+    },
     {
         accessorKey: "label",
         header: ({ column }) => (
@@ -125,9 +155,10 @@ export const columns: ColumnDef<PlantRow>[] = [
     },
 ];
 
-export function TableView({ layout, onSelectPlant }: TableViewProps) {
+export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelectedPlantIds }: TableViewProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
   const allPlants = React.useMemo(() => {
     return Object.values(layout).flatMap(category =>
@@ -147,11 +178,29 @@ export function TableView({ layout, onSelectPlant }: TableViewProps) {
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
+      rowSelection,
     },
   });
+
+  React.useEffect(() => {
+    const selectedIds = Object.keys(rowSelection).map(index => allPlants[parseInt(index)].id);
+    setSelectedPlantIds(selectedIds);
+  }, [rowSelection, allPlants, setSelectedPlantIds]);
+
+  React.useEffect(() => {
+      const newRowSelection: RowSelectionState = {};
+      selectedPlantIds.forEach(id => {
+          const index = allPlants.findIndex(p => p.id === id);
+          if (index !== -1) {
+              newRowSelection[index] = true;
+          }
+      });
+      setRowSelection(newRowSelection);
+  }, [selectedPlantIds, allPlants]);
 
   return (
     <div className="p-4 md:p-8">
@@ -169,11 +218,11 @@ export function TableView({ layout, onSelectPlant }: TableViewProps) {
                                     header.column.columnDef.header,
                                     header.getContext()
                                 )}
-                             {header.column.getCanFilter() ? (
+                             {header.column.getCanFilter() && !header.isPlaceholder && (
                                 <div>
                                     <Filter column={header.column} />
                                 </div>
-                                ) : null}
+                                ) }
                         </TableHead>
                     ))}
                     </TableRow>

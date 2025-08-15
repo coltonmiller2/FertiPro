@@ -12,6 +12,7 @@ import { BackyardMap } from '@/components/backyard-map';
 import { TableView } from '@/components/table-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { BulkUpdatePanel } from '@/components/bulk-update-panel';
 
 function isPlantCategory(value: any): value is PlantCategory {
     return value && typeof value === 'object' && 'name' in value && 'color' in value && Array.isArray(value.plants);
@@ -32,36 +33,64 @@ const getFilteredLayout = (layout: BackyardLayout | null): Omit<BackyardLayout, 
 }
 
 export function BackyardPage() {
-  const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, updateRecordInPlant, updatePlant } = useBackyardData();
-  const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
+  const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant } = useBackyardData();
+  const [selectedPlantIds, setSelectedPlantIds] = useState<string[]>([]);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
 
   const filteredLayout = useMemo(() => getFilteredLayout(layout), [layout]);
 
+  const allPlants = useMemo(() => {
+    if (!layout) return [];
+    return Object.values(filteredLayout).flatMap(category => category.plants);
+  }, [filteredLayout]);
+
+  const selectedPlants = useMemo(() => {
+    return allPlants.filter(p => selectedPlantIds.includes(p.id));
+  }, [selectedPlantIds, allPlants]);
+  
   const { selectedPlant, selectedPlantCategory } = useMemo(() => {
-    if (!selectedPlantId || !layout) {
+    if (selectedPlantIds.length !== 1 || !layout) {
       return { selectedPlant: null, selectedPlantCategory: null };
     }
+    const singleSelectedId = selectedPlantIds[0];
     for (const categoryKey in layout) {
       const category = layout[categoryKey];
       if (isPlantCategory(category)) {
-          const plant = category.plants.find(p => p.id === selectedPlantId);
+          const plant = category.plants.find(p => p.id === singleSelectedId);
           if (plant) {
             return { selectedPlant: plant, selectedPlantCategory: category };
           }
       }
     }
     return { selectedPlant: null, selectedPlantCategory: null };
-  }, [selectedPlantId, layout]);
+  }, [selectedPlantIds, layout]);
 
-  const handleSelectPlant = (plantId: string | null) => {
-    setSelectedPlantId(plantId);
+  const handleSelectPlant = (plantId: string | null, isMultiSelect = false) => {
+    if (plantId === null) {
+      setSelectedPlantIds([]);
+      return;
+    }
+
+    if (isMultiSelect) {
+      setSelectedPlantIds(prev =>
+        prev.includes(plantId)
+          ? prev.filter(id => id !== plantId)
+          : [...prev, plantId]
+      );
+    } else {
+      setSelectedPlantIds([plantId]);
+    }
   };
   
   const handleAddRecord = (plantId: string, record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => {
     addRecordToPlant(plantId, record, photoFile);
   };
+  
+  const handleBulkAddRecord = (plantIds: string[], record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => {
+    addRecordToPlants(plantIds, record, photoFile);
+    setSelectedPlantIds([]);
+  }
 
   const handleUpdateRecord = (plantId: string, record: PlantRecord, photoFile?: File) => {
     updateRecordInPlant(plantId, record, photoFile);
@@ -69,12 +98,17 @@ export function BackyardPage() {
 
   const handleDeletePlant = (plantId: string) => {
     removePlant(plantId);
-    setSelectedPlantId(null);
+    setSelectedPlantIds(prev => prev.filter(id => id !== plantId));
   };
 
   const handleUpdatePlant = (plantId: string, updates: Partial<Plant>) => {
     updatePlant(plantId, updates);
   };
+
+  const showDetailsPanel = selectedPlants.length === 1;
+  const showBulkUpdatePanel = selectedPlants.length > 1;
+  const showRightPanel = showDetailsPanel || showBulkUpdatePanel;
+
 
   if (loading || !layout) {
     return (
@@ -117,22 +151,28 @@ export function BackyardPage() {
       </header>
       
       <main className="flex flex-1 relative overflow-hidden">
-        <div className={cn("flex-1 transition-all duration-300 ease-in-out", {"w-full": !selectedPlant, "w-[calc(100%-24rem)]": !!selectedPlant})}>
+        <div className={cn("flex-1 transition-all duration-300 ease-in-out", {"w-full": !showRightPanel, "w-[calc(100%-24rem)]": showRightPanel})}>
             {viewMode === 'map' ? (
                 <BackyardMap
                     layout={filteredLayout}
-                    selectedPlantId={selectedPlantId}
+                    selectedPlantIds={selectedPlantIds}
                     onSelectPlant={handleSelectPlant}
                     onUpdatePlantPosition={updatePlantPosition}
                 />
             ) : (
                 <div className="h-full overflow-auto">
-                    <TableView layout={filteredLayout} onSelectPlant={handleSelectPlant} />
+                    <TableView 
+                      layout={filteredLayout}
+                      selectedPlantIds={selectedPlantIds}
+                      onSelectPlant={handleSelectPlant}
+                      setSelectedPlantIds={setSelectedPlantIds}
+                    />
                 </div>
             )}
         </div>
+        
         <PlantDetailsPanel
-          plant={selectedPlant}
+          plant={showDetailsPanel ? selectedPlants[0] : null}
           category={selectedPlantCategory}
           onClose={() => handleSelectPlant(null)}
           onAddRecord={handleAddRecord}
@@ -140,6 +180,14 @@ export function BackyardPage() {
           onDeletePlant={handleDeletePlant}
           onUpdatePlant={handleUpdatePlant}
         />
+        
+        <BulkUpdatePanel
+            isOpen={showBulkUpdatePanel}
+            selectedPlants={selectedPlants}
+            onClose={() => setSelectedPlantIds([])}
+            onBulkAddRecord={handleBulkAddRecord}
+        />
+
       </main>
       <AddPlantModal
         isOpen={isAddModalOpen}
