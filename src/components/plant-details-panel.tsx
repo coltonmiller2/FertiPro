@@ -81,6 +81,13 @@ const EditPlantTypeModal: React.FC<{
             type: plant.type,
         },
     });
+    
+    React.useEffect(() => {
+        if (isOpen) {
+            form.reset({ type: plant.type });
+        }
+    }, [isOpen, plant, form]);
+
 
     function onSubmit(values: z.infer<typeof plantTypeFormSchema>) {
         onUpdatePlant(plant.id, { type: values.type });
@@ -124,24 +131,22 @@ const EditRecordModal: React.FC<{
     record: PlantRecord;
     plantId: string;
     onUpdateRecord: (plantId: string, record: PlantRecord, photoFile?: File) => void;
-    children: React.ReactNode;
-}> = ({ record, plantId, onUpdateRecord, children }) => {
-    const [isOpen, setIsOpen] = React.useState(false);
-
+    isOpen: boolean;
+    onClose: () => void;
+}> = ({ record, plantId, onUpdateRecord, isOpen, onClose }) => {
+    
     const form = useForm<z.infer<typeof recordFormSchema>>({
         resolver: zodResolver(recordFormSchema),
-        defaultValues: {
-            ...record,
-            date: new Date(record.date),
-        },
     });
     
     React.useEffect(() => {
-        form.reset({
-            ...record,
-            date: new Date(record.date)
-        });
-    }, [record, form]);
+        if (isOpen && record) {
+            form.reset({
+                ...record,
+                date: new Date(record.date)
+            });
+        }
+    }, [isOpen, record, form]);
 
     const photoRef = form.register("photo");
 
@@ -153,19 +158,17 @@ const EditRecordModal: React.FC<{
             date: format(values.date, "yyyy-MM-dd"),
         };
         onUpdateRecord(plantId, updatedRecord, photoFile);
-        setIsOpen(false);
+        onClose();
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+        <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Edit Record</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        {/* Form fields are the same as the main form, pre-filled */}
                         <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="treatment" render={({ field }) => ( <FormItem><FormLabel>Treatment</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="e.g., 4 TBSP" {...field} /></FormControl><FormMessage /></FormItem> )} />
@@ -181,7 +184,7 @@ const EditRecordModal: React.FC<{
                             </FormItem>
                         )}/>
                         <DialogFooter>
-                            <DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose>
+                            <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
                             <Button type="submit">Save Changes</Button>
                         </DialogFooter>
                     </form>
@@ -194,6 +197,8 @@ const EditRecordModal: React.FC<{
 
 export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant, onUpdatePlant }: PlantDetailsPanelProps) {
   
+  const [editingRecord, setEditingRecord] = React.useState<PlantRecord | null>(null);
+
   const form = useForm<z.infer<typeof recordFormSchema>>({
     resolver: zodResolver(recordFormSchema),
     defaultValues: {
@@ -370,11 +375,9 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                                     {record.phLevel && <p><strong>pH:</strong> {record.phLevel}</p>}
                                     {record.moistureLevel && <p><strong>Moisture:</strong> {record.moistureLevel}%</p>}
                                 </div>
-                                 <EditRecordModal record={record} plantId={plant.id} onUpdateRecord={onUpdateRecord}>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                </EditRecordModal>
+                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingRecord(record)}>
+                                    <Edit className="h-4 w-4" />
+                                </Button>
                             </div>
                             {record.photoDataUri && (
                                 <div className="mt-2">
@@ -418,6 +421,17 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
           </footer>
         </div>
       )}
+       {editingRecord && (
+        <EditRecordModal
+          isOpen={!!editingRecord}
+          onClose={() => setEditingRecord(null)}
+          record={editingRecord}
+          plantId={plant!.id}
+          onUpdateRecord={onUpdateRecord}
+        />
+      )}
     </div>
   );
 }
+
+    
