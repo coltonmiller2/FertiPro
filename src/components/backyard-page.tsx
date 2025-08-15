@@ -133,7 +133,7 @@ export function BackyardPage() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-background font-sans overflow-hidden">
+    <div className="flex h-screen w-screen flex-col bg-background font-sans">
       <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6 z-10">
         <div className="flex items-center gap-2 font-semibold">
           <Leaf className="h-6 w-6 text-primary" />
@@ -171,7 +171,7 @@ export function BackyardPage() {
             )}
         </div>
         
-        <div className={cn("transition-transform duration-300 ease-in-out", showRightPanel ? 'w-96' : 'w-0')}>
+        <div className={cn("transition-all duration-300 ease-in-out", showRightPanel ? 'w-96' : 'w-0')}>
             {showDetailsPanel && (
                 <PlantDetailsPanel
                   plant={selectedPlants[0]}
