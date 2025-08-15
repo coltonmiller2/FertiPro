@@ -123,10 +123,8 @@ export function BackyardPage() {
             <Skeleton className="h-10 w-28" />
           </div>
         </header>
-        <main className="flex-1 relative">
-            <div className="relative w-full h-full p-4 md:p-8 flex items-center justify-center">
-              <Skeleton className="w-full h-full max-w-[1000px] max-h-[1000px] aspect-square shadow-2xl rounded-lg"/>
-            </div>
+        <main className="flex-1 relative flex items-center justify-center p-4 md:p-8">
+            <Skeleton className="w-full h-full max-w-[1000px] shadow-2xl rounded-lg"/>
         </main>
       </div>
     );
@@ -151,7 +149,7 @@ export function BackyardPage() {
       </header>
       
       <main className="flex flex-1 overflow-hidden">
-        <div className={cn("transition-all duration-300 ease-in-out h-full", showRightPanel ? "w-[calc(100%-24rem)]" : "w-full")}>
+        <div className={cn("transition-all duration-300 ease-in-out h-full flex-1", showRightPanel ? "w-[calc(100%-24rem)]" : "w-full")}>
             {viewMode === 'map' ? (
                 <BackyardMap
                     layout={filteredLayout}

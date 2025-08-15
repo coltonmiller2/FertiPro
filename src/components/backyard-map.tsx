@@ -75,7 +75,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
       className="p-4 md:p-8 flex items-center justify-center h-full w-full"
     >
       <div
-        className="relative w-full max-w-[1000px] aspect-square bg-white shadow-2xl rounded-lg bg-contain bg-no-repeat bg-center"
+        className="relative w-full h-full max-w-[1000px] max-h-[1000px] bg-white shadow-2xl rounded-lg bg-contain bg-no-repeat bg-center"
         style={{
           backgroundImage: `url('https://i.imgur.com/7wkMw77.png')`,
         }}
