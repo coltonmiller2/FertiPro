@@ -16,6 +16,7 @@ export interface Plant {
   position: { x: number; y: number };
   records: Record[];
   nextScheduledFertilizationDate?: string;
+  trunkDiameter?: string;
 }
 
 export interface PlantCategory {

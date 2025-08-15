@@ -66,6 +66,7 @@ const recordFormSchema = z.object({
 const plantDetailsFormSchema = z.object({
   type: z.string().min(2, { message: "Plant type must be at least 2 characters." }),
   nextScheduledFertilizationDate: z.date().optional().nullable(),
+  trunkDiameter: z.string().optional(),
 });
 
 const formatDisplayDate = (dateString: string | undefined) => {
@@ -78,9 +79,10 @@ const formatDisplayDate = (dateString: string | undefined) => {
 
 const EditPlantDetailsModal: React.FC<{
     plant: Plant;
+    category: PlantCategory;
     onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void;
     children: React.ReactNode;
-}> = ({ plant, onUpdatePlant, children }) => {
+}> = ({ plant, category, onUpdatePlant, children }) => {
     const [isOpen, setIsOpen] = React.useState(false);
 
     const form = useForm<z.infer<typeof plantDetailsFormSchema>>({
@@ -96,6 +98,7 @@ const EditPlantDetailsModal: React.FC<{
             form.reset({ 
                 type: plant.type,
                 nextScheduledFertilizationDate: nextDate,
+                trunkDiameter: plant.trunkDiameter || "",
             });
         }
     }, [isOpen, plant, form]);
@@ -107,10 +110,13 @@ const EditPlantDetailsModal: React.FC<{
             nextScheduledFertilizationDate: values.nextScheduledFertilizationDate 
                 ? format(values.nextScheduledFertilizationDate, 'yyyy-MM-dd')
                 : undefined,
+            trunkDiameter: values.trunkDiameter
         };
         onUpdatePlant(plant.id, updates);
         setIsOpen(false);
     }
+    
+    const isPalm = category.name === 'Queen and King Palms';
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -134,6 +140,21 @@ const EditPlantDetailsModal: React.FC<{
                                 </FormItem>
                             )}
                         />
+                         {isPalm && (
+                            <FormField
+                                control={form.control}
+                                name="trunkDiameter"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Trunk Diameter</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="e.g., 12&quot;" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        )}
                         <FormField
                             control={form.control}
                             name="nextScheduledFertilizationDate"
@@ -299,13 +320,14 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     });
   }, [plant, form]);
   
+  const isPalm = category?.name === 'Queen and King Palms';
 
   return (
     <div
       className={cn(
         "bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-all duration-300 ease-in-out z-20",
         "w-96 shrink-0",
-        {"translate-x-0": panelOpen, "translate-x-full w-0": !panelOpen}
+        {"translate-x-0": panelOpen, "translate-x-full w-0": !panelOpen, "hidden": !panelOpen}
       )}
     >
       {plant && category && (
@@ -315,7 +337,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                 <div>
                     <h2 className="text-lg font-semibold flex items-center gap-2">
                         {plant.type} ({plant.label})
-                        <EditPlantDetailsModal plant={plant} onUpdatePlant={onUpdatePlant}>
+                        <EditPlantDetailsModal plant={plant} category={category} onUpdatePlant={onUpdatePlant}>
                             <Button variant="ghost" size="icon" className="h-6 w-6">
                                 <Edit className="h-4 w-4" />
                             </Button>
@@ -325,6 +347,11 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                      <p className="text-xs text-muted-foreground mt-1">
                         Next Fertilization: {formatDisplayDate(plant.nextScheduledFertilizationDate)}
                     </p>
+                    {isPalm && plant.trunkDiameter && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Trunk Diameter: {plant.trunkDiameter}
+                        </p>
+                    )}
                 </div>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>

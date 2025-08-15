@@ -7,8 +7,8 @@ export const initialData: BackyardLayout = {
     name: 'Queen and King Palms',
     color: '#DC2626',
     plants: [
-      { id: 'qkp-a', label: 'A', type: 'Queen Palm', position: { x: 40, y: 85 }, records: [{ id: 1, date: '2025-02-22', treatment: 'Palm Gain 8-2-12', notes: '', phLevel: '', moistureLevel: '' }], nextScheduledFertilizationDate: '2025-05-22' },
-      { id: 'qkp-b', label: 'B', type: 'King Palm', position: { x: 45, y: 85 }, records: [{ id: 2, date: '2025-02-23', treatment: 'Palm Gain 8-2-12', notes: '', phLevel: '', moistureLevel: '' }] },
+      { id: 'qkp-a', label: 'A', type: 'Queen Palm', position: { x: 40, y: 85 }, records: [{ id: 1, date: '2025-02-22', treatment: 'Palm Gain 8-2-12', notes: '', phLevel: '', moistureLevel: '' }], nextScheduledFertilizationDate: '2025-05-22', trunkDiameter: '12"' },
+      { id: 'qkp-b', label: 'B', type: 'King Palm', position: { x: 45, y: 85 }, records: [{ id: 2, date: '2025-02-23', treatment: 'Palm Gain 8-2-12', notes: '', phLevel: '', moistureLevel: '' }], trunkDiameter: '10"' },
       { id: 'qkp-c', label: 'C', type: 'Queen Palm', position: { x: 50, y: 85 }, records: [{ id: 3, date: '2025-02-24', treatment: 'Palm Gain 8-2-12', notes: '', phLevel: '', moistureLevel: '' }, { id: 4, date: '2025-03-04', treatment: 'Magnesium', notes: '4 TBSP', phLevel: '', moistureLevel: '' }, { id: 5, date: '2025-03-04', treatment: 'Manganese', notes: '6 TBSP', phLevel: '', moistureLevel: '' }], nextScheduledFertilizationDate: '2025-06-04' },
       { id: 'qkp-d', label: 'D', type: 'King Palm', position: { x: 20, y: 55 }, records: [{ id: 6, date: '2025-03-04', treatment: 'Magnesium', notes: '4 TBSP', phLevel: '', moistureLevel: '' }, { id: 7, date: '2025-03-04', treatment: 'Manganese', notes: '6 TBSP', phLevel: '', moistureLevel: '' }] },
       { id: 'qkp-e', label: 'E', type: 'Queen Palm', position: { x: 20, y: 40 }, records: [{ id: 8, date: '2025-03-04', treatment: 'Magnesium', notes: '4 TBSP', phLevel: '', moistureLevel: '' }, { id: 9, date: '2025-03-04', treatment: 'Manganese', notes: '6 TBSP', phLevel: '', moistureLevel: '' }] },
