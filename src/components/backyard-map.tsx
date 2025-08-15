@@ -4,6 +4,7 @@
 import React, { useState, useRef, MouseEvent } from 'react';
 import type { BackyardLayout, Plant } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface BackyardMapProps {
   layout: BackyardLayout;
@@ -72,8 +73,19 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   
   return (
     <div className="relative w-full h-full p-4 md:p-8 flex items-center justify-center">
-       <div className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square shadow-2xl rounded-lg overflow-hidden bg-transparent">
+       <div className="relative w-full h-full max-w-[1000px] max-h-[1000px] aspect-square shadow-2xl rounded-lg overflow-hidden bg-white">
         
+        {/* Background Image */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url('https://i.imgur.com/7wkMw77.png')`,
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+
         {/* Interactive Plant Overlay SVG */}
         <svg
             ref={svgRef}

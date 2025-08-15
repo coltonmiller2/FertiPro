@@ -22,17 +22,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <div
-            style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: -10,
-                backgroundImage: `url('https://i.imgur.com/7wkMw77.png')`,
-                backgroundSize: 'contain',
-                backgroundPosition: 'center 65%',
-                backgroundRepeat: 'no-repeat',
-            }}
-        />
         {children}
         <Toaster />
       </body>
