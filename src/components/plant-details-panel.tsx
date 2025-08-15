@@ -257,15 +257,16 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     // The issue is that `new Date('YYYY-MM-DD')` can be interpreted as UTC midnight,
     // which can be the previous day in some timezones.
     // Adding T00:00 (without Z) makes it explicitly local midnight.
-    return format(new Date(`${dateString}T00:00:00`), "PPP");
+    return format(new Date(`${dateString}T00:00`), "PPP");
   }
 
 
   return (
     <div
       className={cn(
-        "absolute top-0 right-0 h-full w-full max-w-sm bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-transform duration-300 ease-in-out z-20",
-        panelOpen ? 'translate-x-0' : 'translate-x-full'
+        "bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-all duration-300 ease-in-out z-20",
+        "w-96 shrink-0",
+        panelOpen ? 'w-96' : 'w-0'
       )}
     >
       {plant && category && (

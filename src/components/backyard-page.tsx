@@ -11,6 +11,7 @@ import { PlantDetailsPanel } from '@/components/plant-details-panel';
 import { BackyardMap } from '@/components/backyard-map';
 import { TableView } from '@/components/table-view';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 function isPlantCategory(value: any): value is PlantCategory {
     return value && typeof value === 'object' && 'name' in value && 'color' in value && Array.isArray(value.plants);
@@ -115,17 +116,21 @@ export function BackyardPage() {
         </div>
       </header>
       
-      <main className="flex-1 relative overflow-auto">
-        {viewMode === 'map' ? (
-            <BackyardMap
-                layout={filteredLayout}
-                selectedPlantId={selectedPlantId}
-                onSelectPlant={handleSelectPlant}
-                onUpdatePlantPosition={updatePlantPosition}
-            />
-        ) : (
-            <TableView layout={filteredLayout} onSelectPlant={handleSelectPlant} />
-        )}
+      <main className="flex flex-1 relative overflow-hidden">
+        <div className={cn("flex-1 transition-all duration-300 ease-in-out", {"w-full": !selectedPlant, "w-[calc(100%-24rem)]": !!selectedPlant})}>
+            {viewMode === 'map' ? (
+                <BackyardMap
+                    layout={filteredLayout}
+                    selectedPlantId={selectedPlantId}
+                    onSelectPlant={handleSelectPlant}
+                    onUpdatePlantPosition={updatePlantPosition}
+                />
+            ) : (
+                <div className="h-full overflow-auto">
+                    <TableView layout={filteredLayout} onSelectPlant={handleSelectPlant} />
+                </div>
+            )}
+        </div>
         <PlantDetailsPanel
           plant={selectedPlant}
           category={selectedPlantCategory}
