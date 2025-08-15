@@ -286,11 +286,9 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
 
 
   return (
-    <div
-      className="absolute top-0 right-0 h-full w-96 bg-background border-l border-border shadow-lg z-20"
-    >
+    <div className="flex flex-col h-full w-full bg-background border-l border-border shadow-lg z-20">
       {plant && category && (
-        <div className="flex flex-col h-full">
+        <>
           <header className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-2">
                 <div>
@@ -413,7 +411,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                 </AlertDialogContent>
             </AlertDialog>
           </footer>
-        </div>
+        </>
       )}
        {editingRecord && (
         <EditRecordModal

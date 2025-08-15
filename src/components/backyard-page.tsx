@@ -134,7 +134,7 @@ export function BackyardPage() {
 
   return (
     <div className="flex h-screen w-screen flex-col bg-background font-sans overflow-hidden">
-      <header className="flex h-14 items-center justify-between border-b bg-background px-4 lg:px-6 shrink-0 z-10">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6 z-10">
         <div className="flex items-center gap-2 font-semibold">
           <Leaf className="h-6 w-6 text-primary" />
           <span>Backyard Bounty</span>
@@ -150,8 +150,8 @@ export function BackyardPage() {
         </div>
       </header>
       
-      <main className="flex flex-1 relative overflow-hidden">
-        <div className={cn("flex-1", showRightPanel ? "w-[calc(100%-24rem)]" : "w-full")}>
+      <main className="flex flex-1 overflow-hidden">
+        <div className={cn("flex-1 transition-all duration-300 ease-in-out", showRightPanel ? "w-[calc(100%-24rem)]" : "w-full")}>
             {viewMode === 'map' ? (
                 <BackyardMap
                     layout={filteredLayout}
@@ -171,7 +171,7 @@ export function BackyardPage() {
             )}
         </div>
         
-        <div className={cn("transition-transform duration-300 ease-in-out", showRightPanel ? 'translate-x-0' : 'translate-x-full')}>
+        <div className={cn("transition-transform duration-300 ease-in-out", showRightPanel ? 'w-96' : 'w-0')}>
             {showDetailsPanel && (
                 <PlantDetailsPanel
                   plant={selectedPlants[0]}

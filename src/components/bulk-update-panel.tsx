@@ -87,10 +87,10 @@ export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: Bu
 
   return (
     <div
-      className="absolute top-0 right-0 h-full w-96 bg-background border-l border-border shadow-lg z-20"
+      className="flex flex-col h-full w-full bg-background border-l border-border shadow-lg z-20"
     >
       {selectedPlants.length > 0 && (
-        <div className="flex flex-col h-full">
+        <>
           <header className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-2">
                 <div>
@@ -205,7 +205,7 @@ export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: Bu
               </Card>
             </div>
           </ScrollArea>
-        </div>
+        </>
       )}
     </div>
   );
