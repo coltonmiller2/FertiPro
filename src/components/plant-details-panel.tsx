@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { AITreatmentSuggestion } from '@/components/ai-suggestion';
@@ -111,7 +112,7 @@ const EditRecordModal: React.FC<{
                         {/* Form fields are the same as the main form, pre-filled */}
                         <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="treatment" render={({ field }) => ( <FormItem><FormLabel>Treatment</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-                        <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem><FormLabel>Notes</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                        <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="e.g., 4 TBSP" {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <div className="grid grid-cols-2 gap-4">
                             <FormField control={form.control} name="phLevel" render={({ field }) => ( <FormItem><FormLabel>pH Level</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
                             <FormField control={form.control} name="moistureLevel" render={({ field }) => ( <FormItem><FormLabel>Moisture %</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
@@ -250,7 +251,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onU
                        <FormField control={form.control} name="notes" render={({ field }) => (
                           <FormItem>
                             <FormLabel>Notes</FormLabel>
-                            <FormControl><Input placeholder="e.g., 4 TBSP" {...field} /></FormControl>
+                            <FormControl><Textarea placeholder="e.g., 4 TBSP" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -299,7 +300,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onU
                                 <div>
                                     <p><strong>Date:</strong> {format(new Date(record.date), "PPP")}</p>
                                     <p><strong>Treatment:</strong> {record.treatment}</p>
-                                    {record.notes && <p><strong>Notes:</strong> {record.notes}</p>}
+                                    {record.notes && <p className="whitespace-pre-wrap"><strong>Notes:</strong> {record.notes}</p>}
                                     {(record.phLevel || record.moistureLevel) && <Separator className="my-2" />}
                                     {record.phLevel && <p><strong>pH:</strong> {record.phLevel}</p>}
                                     {record.moistureLevel && <p><strong>Moisture:</strong> {record.moistureLevel}%</p>}
