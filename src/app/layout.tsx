@@ -28,9 +28,9 @@ export default function RootLayout({
                 inset: 0,
                 zIndex: -10,
                 backgroundImage: `url('https://i.imgur.com/7wkMw77.png')`,
-                backgroundSize: 'cover',
+                backgroundSize: 'contain',
                 backgroundPosition: 'center',
-                filter: 'brightness(70%) blur(4px)',
+                backgroundRepeat: 'no-repeat',
             }}
         />
         {children}
