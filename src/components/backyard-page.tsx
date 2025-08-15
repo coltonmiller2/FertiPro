@@ -171,23 +171,25 @@ export function BackyardPage() {
             )}
         </div>
         
-        <PlantDetailsPanel
-          isOpen={showDetailsPanel}
-          plant={showDetailsPanel ? selectedPlants[0] : null}
-          category={selectedPlantCategory}
-          onClose={() => handleSelectPlant(null, false)}
-          onAddRecord={handleAddRecord}
-          onUpdateRecord={handleUpdateRecord}
-          onDeletePlant={handleDeletePlant}
-          onUpdatePlant={handleUpdatePlant}
-        />
+        {showDetailsPanel && (
+            <PlantDetailsPanel
+              plant={selectedPlants[0]}
+              category={selectedPlantCategory}
+              onClose={() => handleSelectPlant(null, false)}
+              onAddRecord={handleAddRecord}
+              onUpdateRecord={handleUpdateRecord}
+              onDeletePlant={handleDeletePlant}
+              onUpdatePlant={handleUpdatePlant}
+            />
+        )}
         
-        <BulkUpdatePanel
-            isOpen={showBulkUpdatePanel}
-            selectedPlants={selectedPlants}
-            onClose={() => setSelectedPlantIds([])}
-            onBulkAddRecord={handleBulkAddRecord}
-        />
+        {showBulkUpdatePanel && (
+            <BulkUpdatePanel
+                selectedPlants={selectedPlants}
+                onClose={() => setSelectedPlantIds([])}
+                onBulkAddRecord={handleBulkAddRecord}
+            />
+        )}
 
       </main>
       <AddPlantModal

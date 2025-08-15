@@ -22,7 +22,6 @@ import { Badge } from './ui/badge';
 
 
 interface BulkUpdatePanelProps {
-  isOpen: boolean;
   selectedPlants: Plant[];
   onClose: () => void;
   onBulkAddRecord: (plantIds: string[], record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => void;
@@ -38,7 +37,7 @@ const recordFormSchema = z.object({
 });
 
 
-export function BulkUpdatePanel({ isOpen, selectedPlants, onClose, onBulkAddRecord }: BulkUpdatePanelProps) {
+export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: BulkUpdatePanelProps) {
   
   const form = useForm<z.infer<typeof recordFormSchema>>({
     resolver: zodResolver(recordFormSchema),
@@ -77,23 +76,18 @@ export function BulkUpdatePanel({ isOpen, selectedPlants, onClose, onBulkAddReco
   }
 
   React.useEffect(() => {
-    if (isOpen) {
-        form.reset({
-          date: new Date(),
-          treatment: "",
-          notes: "",
-          phLevel: "",
-          moistureLevel: "",
-        });
-    }
-  }, [isOpen, form]);
+    form.reset({
+      date: new Date(),
+      treatment: "",
+      notes: "",
+      phLevel: "",
+      moistureLevel: "",
+    });
+  }, [form, selectedPlants]);
 
   return (
     <div
-      className={cn(
-        "absolute top-0 right-0 h-full w-96 shrink-0 bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-transform duration-500 ease-in-out z-20",
-        isOpen ? "translate-x-0" : "translate-x-full"
-      )}
+      className="h-full w-96 shrink-0 bg-background/95 backdrop-blur-sm border-l border-border shadow-lg z-20"
     >
       {selectedPlants.length > 0 && (
         <div className="flex flex-col h-full">

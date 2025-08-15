@@ -42,7 +42,6 @@ import { AITreatmentSuggestion } from '@/components/ai-suggestion';
 
 
 interface PlantDetailsPanelProps {
-  isOpen: boolean;
   plant: Plant | null;
   category: PlantCategory | null;
   onClose: () => void;
@@ -219,7 +218,7 @@ const EditPlantNameModal: React.FC<{
     );
 }
 
-export function PlantDetailsPanel({ isOpen, plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant, onUpdatePlant }: PlantDetailsPanelProps) {
+export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant, onUpdatePlant }: PlantDetailsPanelProps) {
   
   const [editingRecord, setEditingRecord] = React.useState<PlantRecord | null>(null);
   const [isEditingPlantName, setIsEditingPlantName] = React.useState(false);
@@ -288,10 +287,7 @@ export function PlantDetailsPanel({ isOpen, plant, category, onClose, onAddRecor
 
   return (
     <div
-      className={cn(
-        "absolute top-0 right-0 h-full w-96 shrink-0 bg-background/95 backdrop-blur-sm border-l border-border shadow-lg transition-transform duration-500 ease-in-out z-20",
-        isOpen ? "translate-x-0" : "translate-x-full"
-      )}
+      className="h-full w-96 shrink-0 bg-background/95 backdrop-blur-sm border-l border-border shadow-lg z-20"
     >
       {plant && category && (
         <div className="flex flex-col h-full">
