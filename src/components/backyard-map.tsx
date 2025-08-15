@@ -132,7 +132,7 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
                 />
                 <text
                     x="0"
-                    y="0.6"
+                    y="0.7"
                     textAnchor="middle"
                     alignmentBaseline="central"
                     fontSize="1.8"
