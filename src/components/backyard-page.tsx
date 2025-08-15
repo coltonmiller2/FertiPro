@@ -75,7 +75,7 @@ export function BackyardPage() {
         </Button>
       </header>
       
-      <main className="flex-1 relative">
+      <main className="flex-1 relative pt-14">
         <BackyardMap
           layout={layout}
           selectedPlantId={selectedPlantId}
