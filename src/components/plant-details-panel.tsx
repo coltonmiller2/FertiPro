@@ -143,7 +143,8 @@ const EditRecordModal: React.FC<{
         if (isOpen && record) {
             form.reset({
                 ...record,
-                date: new Date(record.date)
+                date: new Date(record.date),
+                photo: undefined, // Don't prefill file input
             });
         }
     }, [isOpen, record, form]);
@@ -152,11 +153,14 @@ const EditRecordModal: React.FC<{
 
     async function onSubmit(values: z.infer<typeof recordFormSchema>) {
         const photoFile = values.photo?.[0];
-        const updatedRecord = {
-            ...record,
+        const updatedRecord: PlantRecord = {
+            ...record, // Keep original id and photoDataUri
             ...values,
             date: format(values.date, "yyyy-MM-dd"),
         };
+        // photoDataUri will be added by onUpdateRecord if photoFile exists
+        delete (updatedRecord as any).photo;
+
         onUpdateRecord(plantId, updatedRecord, photoFile);
         onClose();
     }
@@ -173,8 +177,8 @@ const EditRecordModal: React.FC<{
                         <FormField control={form.control} name="treatment" render={({ field }) => ( <FormItem><FormLabel>Treatment</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="e.g., 4 TBSP" {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <div className="grid grid-cols-2 gap-4">
-                            <FormField control={form.control} name="phLevel" render={({ field }) => ( <FormItem><FormLabel>pH Level</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name="moistureLevel" render={({ field }) => ( <FormItem><FormLabel>Moisture %</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                            <FormField control={form.control} name="phLevel" render={({ field }) => ( <FormItem><FormLabel>pH Level</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
+                            <FormField control={form.control} name="moistureLevel" render={({ field }) => ( <FormItem><FormLabel>Moisture %</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
                         </div>
                          <FormField control={form.control} name="photo" render={({ field }) => (
                             <FormItem>
@@ -229,6 +233,11 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
         moistureLevel: "",
         photo: null
     });
+    // Manually reset the file input
+    const photoInput = document.querySelector('input[name="photo"]') as HTMLInputElement | null;
+    if (photoInput) {
+        photoInput.value = '';
+    }
   }
 
   const panelOpen = !!plant;
@@ -407,7 +416,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                     <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This will permanently remove this plant and all its records. This action cannot be undone.
+                        This action will permanently remove this plant and all its records. This action cannot be undone.
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -433,5 +442,3 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     </div>
   );
 }
-
-    

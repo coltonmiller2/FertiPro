@@ -48,26 +48,21 @@ export function useBackyardData() {
 
   const updatePlantPosition = useCallback((plantId: string, newPosition: { x: number; y: number }) => {
     if (!layout) return;
-    const newLayout = { ...layout };
-    let updated = false;
+    const newLayout = structuredClone(layout);
     for (const categoryKey in newLayout) {
-      const category = newLayout[categoryKey];
-      const plantIndex = category.plants.findIndex(p => p.id === plantId);
-      if (plantIndex !== -1) {
-        category.plants[plantIndex].position = newPosition;
-        updated = true;
-        break;
+      const plant = newLayout[categoryKey].plants.find(p => p.id === plantId);
+      if (plant) {
+        plant.position = newPosition;
+        updateLayout(newLayout);
+        return;
       }
-    }
-    if (updated) {
-      updateLayout(newLayout);
     }
   }, [layout, updateLayout]);
 
   const addPlant = useCallback((categoryKey: string, plantType: string) => {
     if (!layout) return;
 
-    const newLayout = { ...layout };
+    const newLayout = structuredClone(layout);
     const category = newLayout[categoryKey];
     if (!category) return;
 
@@ -91,19 +86,14 @@ export function useBackyardData() {
   
   const removePlant = useCallback((plantId: string) => {
     if (!layout) return;
-    const newLayout = { ...layout };
-    let updated = false;
+    const newLayout = structuredClone(layout);
     for (const categoryKey in newLayout) {
-      const category = newLayout[categoryKey];
-      const initialCount = category.plants.length;
-      category.plants = category.plants.filter(p => p.id !== plantId);
-      if (category.plants.length < initialCount) {
-        updated = true;
-        break;
+      const initialCount = newLayout[categoryKey].plants.length;
+      newLayout[categoryKey].plants = newLayout[categoryKey].plants.filter(p => p.id !== plantId);
+      if (newLayout[categoryKey].plants.length < initialCount) {
+        updateLayout(newLayout);
+        return;
       }
-    }
-    if (updated) {
-      updateLayout(newLayout);
     }
   }, [layout, updateLayout]);
   
@@ -116,66 +106,60 @@ export function useBackyardData() {
         photoDataUri: photoFile ? await fileToDataUri(photoFile) : undefined,
     };
 
-    const newLayout = { ...layout };
-    let updated = false;
+    const newLayout = structuredClone(layout);
     for (const categoryKey in newLayout) {
-      const category = newLayout[categoryKey];
-      const plant = category.plants.find(p => p.id === plantId);
+      const plant = newLayout[categoryKey].plants.find(p => p.id === plantId);
       if (plant) {
         plant.records.push(newRecord);
         plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        updated = true;
-        break;
+        updateLayout(newLayout);
+        return;
       }
-    }
-    if (updated) {
-      updateLayout(newLayout);
     }
   }, [layout, updateLayout]);
 
   const updateRecordInPlant = useCallback(async (plantId: string, updatedRecord: PlantRecord, photoFile?: File) => {
     if (!layout) return;
     
+    const newLayout = structuredClone(layout);
+
     if (photoFile) {
         updatedRecord.photoDataUri = await fileToDataUri(photoFile);
+    } else if (updatedRecord.photoDataUri === undefined) {
+        // Ensure photo is not lost if no new file is uploaded
+        const oldRecord = layout[Object.keys(layout).find(key => layout[key].plants.find(p => p.id === plantId))!]
+                            .plants.find(p => p.id === plantId)!
+                            .records.find(r => r.id === updatedRecord.id);
+        if (oldRecord?.photoDataUri) {
+            updatedRecord.photoDataUri = oldRecord.photoDataUri;
+        }
     }
 
-    const newLayout = { ...layout };
-    let updated = false;
+
     for (const categoryKey in newLayout) {
-        const category = newLayout[categoryKey];
-        const plant = category.plants.find(p => p.id === plantId);
+        const plant = newLayout[categoryKey].plants.find(p => p.id === plantId);
         if (plant) {
             const recordIndex = plant.records.findIndex(r => r.id === updatedRecord.id);
             if (recordIndex !== -1) {
                 plant.records[recordIndex] = updatedRecord;
                 plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                updated = true;
-                break;
+                updateLayout(newLayout);
+                return;
             }
         }
-    }
-    if (updated) {
-        updateLayout(newLayout);
     }
   }, [layout, updateLayout]);
 
   const updatePlant = useCallback((plantId: string, updates: Partial<Plant>) => {
     if (!layout) return;
-    const newLayout = { ...layout };
-    let updated = false;
+    const newLayout = structuredClone(layout);
     for (const categoryKey in newLayout) {
-      const category = newLayout[categoryKey];
-      const plantIndex = category.plants.findIndex(p => p.id === plantId);
+      const plantIndex = newLayout[categoryKey].plants.findIndex(p => p.id === plantId);
       if (plantIndex !== -1) {
-        // Create a new plant object with the updates applied
-        category.plants[plantIndex] = { ...category.plants[plantIndex], ...updates };
-        updated = true;
-        break;
+        newLayout[categoryKey].plants[plantIndex] = { ...newLayout[categoryKey].plants[plantIndex], ...updates };
+        updateLayout(newLayout);
+        return;
       }
-    }
-    if (updated) {
-      updateLayout(newLayout);
     }
   }, [layout, updateLayout]);
 
