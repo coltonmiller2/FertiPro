@@ -151,27 +151,19 @@ export function useBackyardData() {
         updatedRecord.photoDataUri = await fileToDataUri(photoFile);
     }
 
-    let a_plant: Plant | undefined;
-    let a_category: string | undefined;
-
     for (const categoryKey in newLayout) {
         const category = newLayout[categoryKey];
         if (isPlantCategory(category)) {
             const plant = category.plants.find(p => p.id === plantId);
             if (plant) {
-                a_plant = plant;
-                a_category = categoryKey;
-                break;
+                const recordIndex = plant.records.findIndex(r => r.id === updatedRecord.id);
+                if (recordIndex !== -1) {
+                    plant.records[recordIndex] = updatedRecord;
+                    plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    updateLayout(newLayout);
+                    return; // Exit after finding and updating
+                }
             }
-        }
-    }
-
-    if (a_plant && a_category) {
-        const recordIndex = a_plant.records.findIndex(r => r.id === updatedRecord.id);
-        if (recordIndex !== -1) {
-            a_plant.records[recordIndex] = updatedRecord;
-            a_plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            updateLayout(newLayout);
         }
     }
   }, [layout, updateLayout]);
