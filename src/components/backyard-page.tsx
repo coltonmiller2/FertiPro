@@ -150,17 +150,15 @@ export function BackyardPage() {
         </div>
       </header>
       
-      <main className="flex flex-1 overflow-hidden">
-        <div className={cn("transition-all duration-300 ease-in-out relative", showRightPanel ? "w-[calc(100%-24rem)]" : "w-full")}>
+      <main className="flex">
+        <div className={cn("transition-all duration-300 ease-in-out relative h-[calc(100vh-3.5rem)]", showRightPanel ? "w-[calc(100%-24rem)]" : "w-full")}>
             {viewMode === 'map' ? (
-                <div className="h-full">
-                    <BackyardMap
-                        layout={filteredLayout}
-                        selectedPlantIds={selectedPlantIds}
-                        onSelectPlant={handleSelectPlant}
-                        onUpdatePlantPosition={updatePlantPosition}
-                    />
-                </div>
+                <BackyardMap
+                    layout={filteredLayout}
+                    selectedPlantIds={selectedPlantIds}
+                    onSelectPlant={handleSelectPlant}
+                    onUpdatePlantPosition={updatePlantPosition}
+                />
             ) : (
                 <div className="h-full overflow-auto">
                     <TableView 
