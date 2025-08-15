@@ -67,6 +67,11 @@ const plantTypeFormSchema = z.object({
   type: z.string().min(2, { message: "Plant type must be at least 2 characters." }),
 });
 
+// Helper function to format date correctly and avoid timezone issues
+const formatLocalDate = (date: Date): string => {
+    const adjustedDate = new Date(date.getTime() - date.getTimezoneOffset() * -60000);
+    return adjustedDate.toISOString().split('T')[0];
+};
 
 const EditPlantTypeModal: React.FC<{
     plant: Plant;
@@ -141,10 +146,11 @@ const EditRecordModal: React.FC<{
     
     React.useEffect(() => {
         if (isOpen && record) {
+            const [year, month, day] = record.date.split('-').map(Number);
             form.reset({
                 ...record,
-                date: new Date(record.date),
-                photo: undefined, // Don't prefill file input
+                date: new Date(year, month - 1, day), // Use local timezone date
+                photo: undefined,
             });
         }
     }, [isOpen, record, form]);
@@ -154,11 +160,10 @@ const EditRecordModal: React.FC<{
     async function onSubmit(values: z.infer<typeof recordFormSchema>) {
         const photoFile = values.photo?.[0];
         const updatedRecord: PlantRecord = {
-            ...record, // Keep original id and photoDataUri
+            ...record,
             ...values,
-            date: format(values.date, "yyyy-MM-dd"),
+            date: formatLocalDate(values.date),
         };
-        // photoDataUri will be added by onUpdateRecord if photoFile exists
         delete (updatedRecord as any).photo;
 
         onUpdateRecord(plantId, updatedRecord, photoFile);
@@ -222,7 +227,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
 
     onAddRecord(plant.id, {
       ...values,
-      date: format(values.date, "yyyy-MM-dd"),
+      date: formatLocalDate(values.date),
     }, photoFile);
 
     form.reset({
@@ -252,6 +257,12 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
       moistureLevel: "",
     });
   }, [plant, form]);
+  
+  const formatDisplayDate = (dateString: string) => {
+    // Dates are stored as 'YYYY-MM-DD'. We need to parse this in UTC to avoid timezone shifts.
+    return format(new Date(`${dateString}T00:00:00Z`), "PPP");
+  }
+
 
   return (
     <div
@@ -377,7 +388,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                         <CardContent className="pt-4">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <p><strong>Date:</strong> {format(new Date(record.date), "PPP")}</p>
+                                    <p><strong>Date:</strong> {formatDisplayDate(record.date)}</p>
                                     <p><strong>Treatment:</strong> {record.treatment}</p>
                                     {record.notes && <p className="whitespace-pre-wrap"><strong>Notes:</strong> {record.notes}</p>}
                                     {(record.phLevel || record.moistureLevel) && <Separator className="my-2" />}
@@ -442,3 +453,5 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     </div>
   );
 }
+
+    
