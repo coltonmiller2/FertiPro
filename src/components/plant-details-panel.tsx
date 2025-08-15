@@ -136,6 +136,13 @@ const EditRecordModal: React.FC<{
         },
     });
     
+    React.useEffect(() => {
+        form.reset({
+            ...record,
+            date: new Date(record.date)
+        });
+    }, [record, form]);
+
     const photoRef = form.register("photo");
 
     async function onSubmit(values: z.infer<typeof recordFormSchema>) {
