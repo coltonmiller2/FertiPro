@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -111,7 +112,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onUpdatePlant, onD
             <div className="p-4 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">New Record</CardTitle>
+                  <CardTitle className="text-base">New Record / Soil Test</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>

@@ -77,12 +77,9 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
         
         {/* Background Image */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 bg-contain bg-no-repeat bg-center"
           style={{
             backgroundImage: `url('https://i.imgur.com/7wkMw77.png')`,
-            backgroundSize: 'contain',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
           }}
         />
 

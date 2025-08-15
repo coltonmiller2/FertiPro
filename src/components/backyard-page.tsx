@@ -6,7 +6,7 @@ import { Leaf, Plus } from 'lucide-react';
 import Image from 'next/image';
 
 import { useBackyardData } from '@/hooks/use-backyard-data';
-import type { Plant, PlantCategory } from '@/lib/types';
+import type { Plant, PlantCategory, Record as PlantRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { AddPlantModal } from '@/components/add-plant-modal';
 import { PlantDetailsPanel } from '@/components/plant-details-panel';
@@ -36,16 +36,10 @@ export function BackyardPage() {
     setSelectedPlantId(plantId);
   };
   
-  const handleUpdatePlant = (plantId: string, record: any) => {
+  const handleUpdatePlant = (plantId: string, record: Omit<PlantRecord, 'id'>) => {
     addRecordToPlant(plantId, record);
-    // Refetch or update local state to show new record
-    if(layout) {
-        const newLayout = {...layout};
-        // This is a bit of a hack to force a re-render of the details panel
-        // In a real app with a more robust state manager, this would be cleaner
-        setSelectedPlantId(null);
-        setTimeout(() => setSelectedPlantId(plantId), 0);
-    }
+    // The hook will update the layout, and useMemo will recalculate the selectedPlant
+    // which will trigger a re-render of the PlantDetailsPanel.
   };
 
   const handleDeletePlant = (plantId: string) => {
