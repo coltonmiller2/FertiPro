@@ -31,6 +31,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
@@ -159,11 +160,69 @@ const EditRecordModal: React.FC<{
     );
 };
 
+const plantNameFormSchema = z.object({
+    type: z.string().min(2, { message: 'Plant name must be at least 2 characters.' }),
+});
 
-export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant }: PlantDetailsPanelProps) {
+const EditPlantNameModal: React.FC<{
+    plant: Plant;
+    onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void;
+    isOpen: boolean;
+    onClose: () => void;
+}> = ({ plant, onUpdatePlant, isOpen, onClose }) => {
+    const form = useForm<z.infer<typeof plantNameFormSchema>>({
+        resolver: zodResolver(plantNameFormSchema),
+        defaultValues: { type: plant.type },
+    });
+
+    React.useEffect(() => {
+        if (isOpen) {
+            form.reset({ type: plant.type });
+        }
+    }, [isOpen, plant, form]);
+
+    function onSubmit(values: z.infer<typeof plantNameFormSchema>) {
+        onUpdatePlant(plant.id, { type: values.type });
+        onClose();
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Plant Name</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 py-4">
+                        <FormField
+                            control={form.control}
+                            name="type"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Plant Name</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+                            <Button type="submit">Save</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant, onUpdatePlant }: PlantDetailsPanelProps) {
   
   const [editingRecord, setEditingRecord] = React.useState<PlantRecord | null>(null);
-  
+  const [isEditingPlantName, setIsEditingPlantName] = React.useState(false);
+
   const isPalm = category?.name === 'Queen and King Palms';
   const latestRecord = plant?.records?.[0];
 
@@ -242,6 +301,9 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                 <div>
                     <h2 className="text-lg font-semibold flex items-center gap-2">
                         {plant.type} ({plant.label})
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsEditingPlantName(true)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
                     </h2>
                     <p className="text-sm" style={{ color: category.color }}>{category.name}</p>
                      <p className="text-xs text-muted-foreground mt-1">
@@ -366,6 +428,14 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
           plantId={plant!.id}
           isPalm={isPalm}
           onUpdateRecord={onUpdateRecord}
+        />
+      )}
+      {plant && (
+        <EditPlantNameModal
+            isOpen={isEditingPlantName}
+            onClose={() => setIsEditingPlantName(false)}
+            plant={plant}
+            onUpdatePlant={onUpdatePlant}
         />
       )}
     </div>
