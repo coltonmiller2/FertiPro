@@ -67,12 +67,6 @@ const plantTypeFormSchema = z.object({
   type: z.string().min(2, { message: "Plant type must be at least 2 characters." }),
 });
 
-// Helper function to format date correctly and avoid timezone issues
-const formatLocalDate = (date: Date): string => {
-    const adjustedDate = new Date(date.getTime() - date.getTimezoneOffset() * -60000);
-    return adjustedDate.toISOString().split('T')[0];
-};
-
 const EditPlantTypeModal: React.FC<{
     plant: Plant;
     onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void;
@@ -162,7 +156,7 @@ const EditRecordModal: React.FC<{
         const updatedRecord: PlantRecord = {
             ...record,
             ...values,
-            date: formatLocalDate(values.date),
+            date: format(values.date, 'yyyy-MM-dd'),
         };
         delete (updatedRecord as any).photo;
 
@@ -227,7 +221,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
 
     onAddRecord(plant.id, {
       ...values,
-      date: formatLocalDate(values.date),
+      date: format(values.date, 'yyyy-MM-dd'),
     }, photoFile);
 
     form.reset({
