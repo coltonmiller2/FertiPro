@@ -15,6 +15,7 @@ interface BackyardMapProps {
 
 export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePlantPosition }: BackyardMapProps) {
   const [draggingPlant, setDraggingPlant] = useState<{ id: string; offset: { x: number; y: number } } | null>(null);
+  const dragHappened = useRef(false);
   const svgRef = useRef<SVGSVGElement>(null);
 
   const getSVGPoint = (e: MouseEvent) => {
@@ -28,6 +29,7 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
 
   const handleMouseDown = (e: MouseEvent, plant: Plant) => {
     e.preventDefault();
+    dragHappened.current = false;
     const point = getSVGPoint(e);
     if (!point) return;
 
@@ -43,6 +45,7 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   const handleMouseMove = (e: MouseEvent) => {
     if (!draggingPlant) return;
     e.preventDefault();
+    dragHappened.current = true; // If mouse moves, it's a drag
     const point = getSVGPoint(e);
     if (!point) return;
 
@@ -57,23 +60,17 @@ export function BackyardMap({ layout, selectedPlantId, onSelectPlant, onUpdatePl
   };
 
   const handleMouseUp = (e: MouseEvent) => {
-    if (draggingPlant) {
-      // Small delay to prevent click event from firing after drag
-      setTimeout(() => setDraggingPlant(null), 50);
-    }
+    setDraggingPlant(null);
   };
   
   const handleClick = (e: MouseEvent, plantId: string) => {
-    if (draggingPlant) {
-      e.stopPropagation();
+    if (dragHappened.current) {
+      // If a drag happened, reset the flag and do nothing.
+      dragHappened.current = false;
       return;
     }
-    // Toggle selection
-    if (selectedPlantId === plantId) {
-      onSelectPlant(null); 
-    } else {
-      onSelectPlant(plantId);
-    }
+    // Otherwise, it was a click, so select the plant.
+    onSelectPlant(plantId);
   };
   
   return (
