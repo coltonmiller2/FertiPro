@@ -33,7 +33,7 @@ const getFilteredLayout = (layout: BackyardLayout | null): Omit<BackyardLayout, 
 }
 
 export function BackyardPage() {
-  const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant } = useBackyardData();
+  const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant, deleteRecordFromPlant } = useBackyardData();
   const [selectedPlantIds, setSelectedPlantIds] = useState<string[]>([]);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
@@ -96,6 +96,10 @@ export function BackyardPage() {
     updateRecordInPlant(plantId, record, photoFile);
   };
 
+  const handleDeleteRecord = (plantId: string, recordId: number) => {
+    deleteRecordFromPlant(plantId, recordId);
+  };
+
   const handleDeletePlant = (plantId: string) => {
     removePlant(plantId);
     setSelectedPlantIds(prev => prev.filter(id => id !== plantId));
@@ -131,7 +135,7 @@ export function BackyardPage() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-background font-sans">
+    <div className="flex h-screen flex-col bg-background font-sans">
       <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6 z-10">
         <div className="flex items-center gap-2 font-semibold">
           <Leaf className="h-6 w-6 text-primary" />
@@ -179,6 +183,7 @@ export function BackyardPage() {
                   onUpdateRecord={handleUpdateRecord}
                   onDeletePlant={handleDeletePlant}
                   onUpdatePlant={handleUpdatePlant}
+                  onDeleteRecord={handleDeleteRecord}
                 />
             )}
             

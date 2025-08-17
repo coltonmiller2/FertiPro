@@ -49,6 +49,7 @@ interface PlantDetailsPanelProps {
   onUpdateRecord: (plantId: string, record: PlantRecord, photoFile?: File) => void;
   onDeletePlant: (plantId: string) => void;
   onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void;
+  onDeleteRecord: (plantId: string, recordId: number) => void;
 }
 
 const recordFormSchema = z.object({
@@ -82,6 +83,10 @@ const EditRecordModal: React.FC<{
     
     const form = useForm<z.infer<typeof recordFormSchema>>({
         resolver: zodResolver(recordFormSchema),
+        defaultValues: {
+            phLevel: '',
+            moistureLevel: '',
+        }
     });
     
     React.useEffect(() => {
@@ -221,7 +226,7 @@ const EditPlantNameModal: React.FC<{
     );
 }
 
-export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant, onUpdatePlant }: PlantDetailsPanelProps) {
+export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpdateRecord, onDeletePlant, onUpdatePlant, onDeleteRecord }: PlantDetailsPanelProps) {
   
   const [editingRecord, setEditingRecord] = React.useState<PlantRecord | null>(null);
   const [isEditingPlantName, setIsEditingPlantName] = React.useState(false);
@@ -370,9 +375,32 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                                     {record.trunkDiameter && <p><strong>Trunk Diameter:</strong> {record.trunkDiameter}</p>}
                                     {record.nextScheduledFertilizationDate && <p><strong>Next Fertilization:</strong> {formatDisplayDate(record.nextScheduledFertilizationDate)}</p>}
                                 </div>
-                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingRecord(record)}>
-                                    <Edit className="h-4 w-4" />
-                                </Button>
+                                <div className="flex items-center">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingRecord(record)}>
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action will permanently delete this record. This cannot be undone.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => onDeleteRecord(plant.id, record.id)}>
+                                                Delete
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
                             </div>
                             {record.photoDataUri && (
                                 <div className="mt-2">

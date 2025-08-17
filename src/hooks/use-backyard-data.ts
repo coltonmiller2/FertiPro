@@ -205,6 +205,25 @@ export function useBackyardData() {
     }
   }, [layout, updateLayout]);
 
+  const deleteRecordFromPlant = useCallback((plantId: string, recordId: number) => {
+    if (!layout) return;
+    const newLayout = structuredClone(layout);
+    for (const categoryKey in newLayout) {
+        const category = newLayout[categoryKey];
+        if (isPlantCategory(category)) {
+            const plant = category.plants.find(p => p.id === plantId);
+            if (plant) {
+                const initialCount = plant.records.length;
+                plant.records = plant.records.filter(r => r.id !== recordId);
+                if (plant.records.length < initialCount) {
+                    updateLayout(newLayout);
+                    return;
+                }
+            }
+        }
+    }
+  }, [layout, updateLayout]);
+
   const updatePlant = useCallback((plantId: string, updates: Partial<Plant>) => {
     if (!layout) return;
     const newLayout = structuredClone(layout);
@@ -222,5 +241,5 @@ export function useBackyardData() {
   }, [layout, updateLayout]);
 
 
-  return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant };
+  return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant, deleteRecordFromPlant };
 }
