@@ -39,6 +39,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { AITreatmentSuggestion } from '@/components/ai-suggestion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 interface PlantDetailsPanelProps {
@@ -86,6 +87,7 @@ const EditRecordModal: React.FC<{
         defaultValues: {
             phLevel: '',
             moistureLevel: '',
+            trunkDiameter: '',
         }
     });
     
@@ -324,38 +326,46 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
 
           <ScrollArea className="flex-1">
             <div className="p-4 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">New Record / Soil Test</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                      <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="treatment" render={({ field }) => ( <FormItem><FormLabel>Treatment</FormLabel><FormControl><Input placeholder="e.g., Palm Gain 8-2-12" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                      <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="e.g., 4 TBSP" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField control={form.control} name="phLevel" render={({ field }) => ( <FormItem><FormLabel>pH Level</FormLabel><FormControl><Input placeholder="e.g., 6.8" {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                        <FormField control={form.control} name="moistureLevel" render={({ field }) => ( <FormItem><FormLabel>Moisture %</FormLabel><FormControl><Input placeholder="e.g., 55" {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                      </div>
-                      {isPalm && (
-                          <FormField control={form.control} name="trunkDiameter" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Trunk Diameter</FormLabel>
-                                <FormControl><Input placeholder="e.g., 12&quot;" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                          )} />
-                      )}
-                      <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="photo" render={({ field }) => ( <FormItem><FormLabel>Attach Photo</FormLabel><FormControl><Input type="file" accept="image/*" {...photoRef} /></FormControl><FormMessage /></FormItem> )}/>
-                      <Button type="submit" className="w-full">Add Record</Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
-
-              <AITreatmentSuggestion plant={plant} />
+                <Accordion type="single" collapsible>
+                    <AccordionItem value="item-1" className="border-b-0">
+                        <AccordionTrigger className="text-base font-semibold">
+                            New Record, Soil Test, or Suggestion
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-6 pt-4">
+                            <Card>
+                                <CardHeader>
+                                <CardTitle className="text-base">New Record / Soil Test</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                <Form {...form}>
+                                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                    <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                                    <FormField control={form.control} name="treatment" render={({ field }) => ( <FormItem><FormLabel>Treatment</FormLabel><FormControl><Input placeholder="e.g., Palm Gain 8-2-12" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                    <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="e.g., 4 TBSP" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={form.control} name="phLevel" render={({ field }) => ( <FormItem><FormLabel>pH Level</FormLabel><FormControl><Input placeholder="e.g., 6.8" {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                                        <FormField control={form.control} name="moistureLevel" render={({ field }) => ( <FormItem><FormLabel>Moisture %</FormLabel><FormControl><Input placeholder="e.g., 55" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                    </div>
+                                    {isPalm && (
+                                        <FormField control={form.control} name="trunkDiameter" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Trunk Diameter</FormLabel>
+                                                <FormControl><Input placeholder="e.g., 12&quot;" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                    )}
+                                    <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                                    <FormField control={form.control} name="photo" render={({ field }) => ( <FormItem><FormLabel>Attach Photo</FormLabel><FormControl><Input type="file" accept="image/*" {...photoRef} /></FormControl><FormMessage /></FormItem> )}/>
+                                    <Button type="submit" className="w-full">Add Record</Button>
+                                    </form>
+                                </Form>
+                                </CardContent>
+                            </Card>
+                            <AITreatmentSuggestion plant={plant} />
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
 
               <div>
                 <h3 className="text-base font-semibold mb-2">History</h3>
@@ -465,3 +475,5 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     </div>
   );
 }
+
+    
