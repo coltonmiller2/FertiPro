@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -18,7 +17,7 @@ import { ArrowUpDown } from "lucide-react";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { BackyardLayout, Plant } from "@/lib/types";
+import type { BackyardLayout, Plant, PlantCategory } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
@@ -37,6 +36,11 @@ const formatDisplayDate = (dateString?: string) => {
     const date = new Date(dateString.replace(/-/g, '/'));
     if (isNaN(date.getTime())) return 'Invalid Date';
     return format(date, "PPP");
+}
+
+// Helper to check if a value is a valid PlantCategory
+function isPlantCategory(value: any): value is PlantCategory {
+    return value && typeof value === 'object' && Array.isArray(value.plants);
 }
 
 export const columns: ColumnDef<PlantRow>[] = [
@@ -156,13 +160,17 @@ export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelected
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   const allPlants = React.useMemo(() => {
-    return Object.values(layout).flatMap(category =>
-      category.plants.map(plant => ({
-        ...plant,
-        categoryName: category.name,
-        categoryColor: category.color,
-      }))
-    );
+    // --- THIS IS THE CORRECTED SECTION ---
+    return Object.values(layout)
+      .filter(isPlantCategory) // Filter out any invalid category types
+      .flatMap(category =>
+        category.plants.map(plant => ({
+          ...plant,
+          categoryName: category.name,
+          categoryColor: category.color,
+        }))
+      );
+    // --- END OF CORRECTION ---
   }, [layout]);
 
   const rowSelection = React.useMemo(() => {
