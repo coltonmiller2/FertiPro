@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState, useRef, MouseEvent } from 'react';
-import type { BackyardLayout, Plant } from '@/lib/types';
+import type { BackyardLayout, Plant, PlantCategory } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 interface BackyardMapProps {
@@ -98,50 +97,56 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
 
             <image href="https://i.imgur.com/7wkMw77.png" x="0" y="0" width="100" height="100" />
 
-            {Object.values(layout).map((category) =>
-            category.plants.map((plant) => {
-              const isSelected = selectedPlantIds.includes(plant.id);
-              return (
-                <g
-                key={plant.id}
-                transform={`translate(${plant.position.x}, ${plant.position.y})`}
-                className={cn("cursor-pointer transition-transform duration-200", draggingPlant?.id === plant.id && "cursor-grabbing")}
-                onMouseDown={(e) => handleMouseDown(e, plant)}
-                onClick={(e) => handleClick(e, plant.id)}
-                >
-                <circle
-                    r="2.2"
-                    fill={category.color}
-                    stroke="white"
-                    strokeWidth="0.3"
-                    className={cn("transition-all", isSelected && "stroke-accent" )}
-                    style={{
-                        filter: isSelected ? 'drop-shadow(0 0 1px hsl(var(--accent)))' : 'drop-shadow(0px 1px 1px rgba(0,0,0,0.3))'
-                    }}
-                />
-                <circle
-                    r="2.2"
-                    fill="transparent"
-                    stroke={isSelected ? 'hsl(var(--accent))' : 'transparent'}
-                    strokeWidth="0.5"
-                />
-                <text
-                    x="0"
-                    y="0"
-                    dy="0.05em"
-                    textAnchor="middle"
-                    alignmentBaseline="middle"
-                    fontSize="1.6"
-                    fontWeight="bold"
-                    fill="white"
-                    className="pointer-events-none select-none"
-                >
-                    {plant.label}
-                </text>
-                </g>
+            {/* --- THIS IS THE CORRECTED SECTION --- */}
+            {Object.values(layout)
+              .filter((category): category is PlantCategory => 
+                typeof category === 'object' && category !== null && Array.isArray(category.plants)
               )
-            })
+              .map((category) =>
+              category.plants.map((plant) => {
+                const isSelected = selectedPlantIds.includes(plant.id);
+                return (
+                  <g
+                  key={plant.id}
+                  transform={`translate(${plant.position.x}, ${plant.position.y})`}
+                  className={cn("cursor-pointer transition-transform duration-200", draggingPlant?.id === plant.id && "cursor-grabbing")}
+                  onMouseDown={(e) => handleMouseDown(e, plant)}
+                  onClick={(e) => handleClick(e, plant.id)}
+                  >
+                  <circle
+                      r="2.2"
+                      fill={category.color}
+                      stroke="white"
+                      strokeWidth="0.3"
+                      className={cn("transition-all", isSelected && "stroke-accent" )}
+                      style={{
+                          filter: isSelected ? 'drop-shadow(0 0 1px hsl(var(--accent)))' : 'drop-shadow(0px 1px 1px rgba(0,0,0,0.3))'
+                      }}
+                  />
+                  <circle
+                      r="2.2"
+                      fill="transparent"
+                      stroke={isSelected ? 'hsl(var(--accent))' : 'transparent'}
+                      strokeWidth="0.5"
+                  />
+                  <text
+                      x="0"
+                      y="0"
+                      dy="0.05em"
+                      textAnchor="middle"
+                      alignmentBaseline="middle"
+                      fontSize="1.6"
+                      fontWeight="bold"
+                      fill="white"
+                      className="pointer-events-none select-none"
+                  >
+                      {plant.label}
+                  </text>
+                  </g>
+                )
+              })
             )}
+            {/* --- END OF CORRECTION --- */}
         </svg>
       </div>
     </div>
