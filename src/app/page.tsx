@@ -1,17 +1,17 @@
 'use client';
 
 import { BackyardPage } from '@/components/backyard-page';
-import { auth } from '@/lib/firebaseConfig'; // Import auth from firebaseConfig
+import firebaseApp from '../lib/firebaseConfig';
+import { getAuth, User, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'; // Import getAuth and User from firebase/auth
 import { useEffect, useState } from 'react';
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const auth = getAuth(firebaseApp); // Get auth instance using getAuth and firebaseApp
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    onAuthStateChanged(auth, (user: User | null) => {
+ setUser(user);
       setLoading(false);
     });
   }, []);
