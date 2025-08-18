@@ -80,7 +80,7 @@ export function AddPlantModal({ isOpen, onClose, onAddPlant, layout }: AddPlantM
                     <SelectContent>
                       {Object.entries(layout).map(([key, category]) => (
                         <SelectItem key={key} value={key}>
-                          {category.name}
+                          {category?.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
