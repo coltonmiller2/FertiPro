@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from 'react';
@@ -116,6 +115,10 @@ const EditRecordModal: React.FC<{
             ...record,
             ...values,
             date: format(values.date, 'yyyy-MM-dd'),
+            notes: values.notes ?? '',
+            phLevel: values.phLevel ?? '',
+            moistureLevel: values.moistureLevel ?? '',
+            trunkDiameter: values.trunkDiameter ?? '',
             nextScheduledFertilizationDate: values.nextScheduledFertilizationDate 
                 ? format(values.nextScheduledFertilizationDate, 'yyyy-MM-dd')
                 : undefined,
@@ -150,8 +153,9 @@ const EditRecordModal: React.FC<{
                                 </FormItem>
                             )} />
                         )}
-                        <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-
+                        {/* --- THIS IS THE FIRST CORRECTED SECTION --- */}
+                        <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                        {/* --- END OF CORRECTION --- */}
                          <FormField control={form.control} name="photo" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Photo</FormLabel>
@@ -274,6 +278,10 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     onAddRecord(plant.id, {
       ...values,
       date: format(values.date, 'yyyy-MM-dd'),
+      notes: values.notes ?? '',
+      phLevel: values.phLevel ?? '',
+      moistureLevel: values.moistureLevel ?? '',
+      trunkDiameter: values.trunkDiameter ?? '',
       nextScheduledFertilizationDate: values.nextScheduledFertilizationDate 
         ? format(values.nextScheduledFertilizationDate, 'yyyy-MM-dd')
         : undefined,
@@ -355,7 +363,9 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                                             </FormItem>
                                         )} />
                                     )}
-                                    <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                                    {/* --- THIS IS THE SECOND CORRECTED SECTION --- */}
+                                    <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                                    {/* --- END OF CORRECTION --- */}
                                     <FormField control={form.control} name="photo" render={({ field }) => ( <FormItem><FormLabel>Attach Photo</FormLabel><FormControl><Input type="file" accept="image/*" {...photoRef} /></FormControl><FormMessage /></FormItem> )}/>
                                     <Button type="submit" className="w-full">Add Record</Button>
                                     </form>
@@ -430,31 +440,31 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
           </ScrollArea>
           
           <footer className="p-4 border-t mt-auto bg-background">
-             <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-full">
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete Plant
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action will permanently remove this plant and all its records. This action cannot be undone.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDeletePlant(plant.id)}>
-                        Delete
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+               <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="w-full">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete Plant
+                      </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                      <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                          This action will permanently remove this plant and all its records. This action cannot be undone.
+                      </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => onDeletePlant(plant.id)}>
+                          Delete
+                      </AlertDialogAction>
+                      </AlertDialogFooter>
+                  </AlertDialogContent>
+              </AlertDialog>
           </footer>
         </>
       )}
-       {editingRecord && (
+      {editingRecord && (
         <EditRecordModal
           isOpen={!!editingRecord}
           onClose={() => setEditingRecord(null)}
@@ -475,5 +485,3 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     </div>
   );
 }
-
-    
