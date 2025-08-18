@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -25,7 +24,7 @@ const getFilteredLayout = (layout: BackyardLayout | null): Omit<BackyardLayout, 
         if (key !== 'version') {
             const category = layout[key];
             if (isPlantCategory(category)) {
-               filteredLayout[key] = category;
+                filteredLayout[key] = category;
             }
         }
     }
@@ -42,8 +41,13 @@ export function BackyardPage() {
 
   const allPlants = useMemo(() => {
     if (!layout) return [];
-    return Object.values(filteredLayout).flatMap(category => category.plants);
-  }, [filteredLayout]);
+    // --- THIS IS THE CORRECTED SECTION ---
+    // We apply the filter again here to satisfy the strict TypeScript build process.
+    return Object.values(filteredLayout)
+      .filter(isPlantCategory)
+      .flatMap(category => category.plants);
+    // --- END OF CORRECTION ---
+  }, [layout, filteredLayout]);
 
   const selectedPlants = useMemo(() => {
     return allPlants.filter(p => selectedPlantIds.includes(p.id));
@@ -117,7 +121,7 @@ export function BackyardPage() {
   if (loading || !layout) {
     return (
       <div className="flex h-screen w-screen flex-col bg-background font-sans overflow-hidden">
-         <header className="flex h-14 items-center justify-between border-b bg-background px-4 lg:px-6 shrink-0 z-10">
+          <header className="flex h-14 items-center justify-between border-b bg-background px-4 lg:px-6 shrink-0 z-10">
           <div className="flex items-center gap-2 font-semibold">
             <Leaf className="h-6 w-6 text-primary" />
             <span>Backyard Bounty</span>
