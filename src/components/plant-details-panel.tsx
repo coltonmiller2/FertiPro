@@ -37,7 +37,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { AITreatmentSuggestion } from '@/components/ai-suggestion';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
@@ -153,9 +152,8 @@ const EditRecordModal: React.FC<{
                                 </FormItem>
                             )} />
                         )}
-                        {/* --- THIS IS THE FIRST CORRECTED SECTION --- */}
                         <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-                        {/* --- END OF CORRECTION --- */}
+
                          <FormField control={form.control} name="photo" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Photo</FormLabel>
@@ -363,16 +361,14 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                                             </FormItem>
                                         )} />
                                     )}
-                                    {/* --- THIS IS THE SECOND CORRECTED SECTION --- */}
                                     <FormField control={form.control} name="nextScheduledFertilizationDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Next Fertilization</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-                                    {/* --- END OF CORRECTION --- */}
                                     <FormField control={form.control} name="photo" render={({ field }) => ( <FormItem><FormLabel>Attach Photo</FormLabel><FormControl><Input type="file" accept="image/*" {...photoRef} /></FormControl><FormMessage /></FormItem> )}/>
                                     <Button type="submit" className="w-full">Add Record</Button>
                                     </form>
                                 </Form>
                                 </CardContent>
                             </Card>
-                            <AITreatmentSuggestion plant={plant} />
+                            {/* <AITreatmentSuggestion plant={plant} /> */}
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
