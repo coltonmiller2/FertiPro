@@ -78,11 +78,20 @@ export function AddPlantModal({ isOpen, onClose, onAddPlant, layout }: AddPlantM
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.entries(layout).map(([key, category]) => (
-                        <SelectItem key={key} value={key}>
-                          {category?.name}
-                        </SelectItem>
-                      ))}
+                      {/* --- THIS IS THE CORRECTED SECTION --- */}
+                      {Object.entries(layout).map(([key, category]) => {
+                        // Check if category is an object and has a name property
+                        if (typeof category === 'object' && category && 'name' in category) {
+                          return (
+                            <SelectItem key={key} value={key}>
+                              {(category as any).name}
+                            </SelectItem>
+                          );
+                        }
+                        // Return null for items that aren't valid categories to prevent rendering them
+                        return null;
+                      })}
+                      {/* --- END OF CORRECTION --- */}
                     </SelectContent>
                   </Select>
                   <FormMessage />
