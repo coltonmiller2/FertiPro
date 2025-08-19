@@ -17,5 +17,5 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUDIO }}'
           channelId: live
-          projectId: backyard-bounty-5v5mw # <-- IMPORTANT: Add your Project ID here
+          projectId: project-controls-hub # <-- IMPORTANT: Add your Project ID here
           
