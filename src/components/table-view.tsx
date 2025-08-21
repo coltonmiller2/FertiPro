@@ -38,7 +38,6 @@ const formatDisplayDate = (dateString?: string) => {
     return format(date, "PPP");
 }
 
-// Helper to check if a value is a valid PlantCategory
 function isPlantCategory(value: any): value is PlantCategory {
     return value && typeof value === 'object' && Array.isArray(value.plants);
 }
@@ -160,9 +159,8 @@ export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelected
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   const allPlants = React.useMemo(() => {
-    // --- THIS IS THE CORRECTED SECTION ---
     return Object.values(layout)
-      .filter(isPlantCategory) // Filter out any invalid category types
+      .filter(isPlantCategory)
       .flatMap(category =>
         category.plants.map(plant => ({
           ...plant,
@@ -170,7 +168,6 @@ export function TableView({ layout, onSelectPlant, selectedPlantIds, setSelected
           categoryColor: category.color,
         }))
       );
-    // --- END OF CORRECTION ---
   }, [layout]);
 
   const rowSelection = React.useMemo(() => {

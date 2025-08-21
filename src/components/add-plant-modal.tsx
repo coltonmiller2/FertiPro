@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { BackyardLayout } from '@/lib/types';
+import type { BackyardLayout, PlantCategory } from '@/lib/types';
 
 interface AddPlantModalProps {
   isOpen: boolean;
@@ -39,6 +39,10 @@ const formSchema = z.object({
     message: 'Plant type must be at least 2 characters.',
   }),
 });
+
+function isPlantCategory(value: any): value is PlantCategory {
+    return value && typeof value === 'object' && 'name' in value && 'color' in value && Array.isArray(value.plants);
+}
 
 export function AddPlantModal({ isOpen, onClose, onAddPlant, layout }: AddPlantModalProps) {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -78,20 +82,16 @@ export function AddPlantModal({ isOpen, onClose, onAddPlant, layout }: AddPlantM
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* --- THIS IS THE CORRECTED SECTION --- */}
                       {Object.entries(layout).map(([key, category]) => {
-                        // Check if category is an object and has a name property
-                        if (typeof category === 'object' && category && 'name' in category) {
+                        if (isPlantCategory(category)) {
                           return (
                             <SelectItem key={key} value={key}>
-                              {(category as any).name}
+                              {category.name}
                             </SelectItem>
                           );
                         }
-                        // Return null for items that aren't valid categories to prevent rendering them
                         return null;
                       })}
-                      {/* --- END OF CORRECTION --- */}
                     </SelectContent>
                   </Select>
                   <FormMessage />

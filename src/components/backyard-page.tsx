@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -42,12 +41,9 @@ export function BackyardPage() {
 
   const allPlants = useMemo(() => {
     if (!layout) return [];
-    // --- THIS IS THE CORRECTED SECTION ---
-    // We apply the filter again here to satisfy the strict TypeScript build process.
     return Object.values(filteredLayout)
       .filter(isPlantCategory)
       .flatMap(category => category.plants);
-    // --- END OF CORRECTION ---
   }, [layout, filteredLayout]);
 
   const selectedPlants = useMemo(() => {

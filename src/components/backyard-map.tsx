@@ -11,6 +11,10 @@ interface BackyardMapProps {
   onUpdatePlantPosition: (plantId:string, position: { x: number; y: number }) => void;
 }
 
+function isPlantCategory(value: any): value is PlantCategory {
+    return value && typeof value === 'object' && Array.isArray(value.plants);
+}
+
 export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdatePlantPosition }: BackyardMapProps) {
   const [draggingPlant, setDraggingPlant] = useState<{ id: string; offset: { x: number; y: number } } | null>(null);
   const dragHappened = useRef(false);
@@ -97,11 +101,8 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
 
             <image href="https://i.imgur.com/7wkMw77.png" x="0" y="0" width="100" height="100" />
 
-            {/* --- THIS IS THE CORRECTED SECTION --- */}
             {Object.values(layout)
-              .filter((category): category is PlantCategory => 
-                typeof category === 'object' && category !== null && Array.isArray(category.plants)
-              )
+              .filter(isPlantCategory)
               .map((category) =>
               category.plants.map((plant) => {
                 const isSelected = selectedPlantIds.includes(plant.id);
@@ -146,7 +147,6 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
                 )
               })
             )}
-            {/* --- END OF CORRECTION --- */}
         </svg>
       </div>
     </div>
