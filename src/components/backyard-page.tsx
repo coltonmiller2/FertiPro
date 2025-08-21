@@ -13,7 +13,6 @@ import { TableView } from '@/components/table-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { BulkUpdatePanel } from '@/components/bulk-update-panel';
-import { AITreatmentSuggestion } from './ai-suggestion';
 
 function isPlantCategory(value: any): value is PlantCategory {
     return value && typeof value === 'object' && 'name' in value && 'color' in value && Array.isArray(value.plants);
