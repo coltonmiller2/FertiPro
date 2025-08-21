@@ -89,32 +89,8 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
         >
-            <defs>
-              <pattern id="grass" patternUnits="userSpaceOnUse" width="4" height="4">
-                <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" style={{ stroke: '#8cb04f', strokeWidth: 0.5 }} />
-              </pattern>
-              <pattern id="patio" patternUnits="userSpaceOnUse" width="10" height="10">
-                <path d="M 0 0 L 10 0 M 0 0 L 0 10" style={{ stroke: '#c2b399', strokeWidth: 0.5 }} />
-              </pattern>
-              <filter id="dropshadow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur in="SourceAlpha" stdDeviation="0.5" result="blur"/>
-                  <feOffset in="blur" dx="0.5" dy="0.5" result="offsetBlur"/>
-                  <feMerge>
-                  <feMergeNode in="offsetBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-              </filter>
-            </defs>
-
-            {/* SVG Background */}
-            <rect width="100" height="100" fill="#f0f0f0" />
-            <rect data-ai-hint="grass lawn" x="10" y="10" width="80" height="80" fill="#a3bf63" rx="5" ry="5" />
-            <rect x="10" y="10" width="80" height="80" fill="url(#grass)" rx="5" ry="5" style={{ opacity: 0.5 }}/>
-            <rect data-ai-hint="patio deck" x="10" y="75" width="80" height="15" fill="#d2c3a8" />
-            <rect x="10" y="75" width="80" height="15" fill="url(#patio)" />
-            <path d="M 10 75 Q 10 70 15 70 H 85 Q 90 70 90 75" fill="#d2c3a8" />
+            <image href="https://placehold.co/1000x1000.png" x="0" y="0" width="100" height="100" />
             
-
             {Object.values(layout)
               .filter(isPlantCategory)
               .map((category) =>
