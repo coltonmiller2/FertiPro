@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Static export has been removed to improve performance with Firestore
+  // This is the line you need to add
+  output: 'export',
 };
 
 export default nextConfig;

@@ -5,7 +5,7 @@ import { getFirestore } from "firebase/firestore"; // Import Firestore
 // Your web app's Firebase configuration
 // This is a public configuration and is safe to expose.
 const firebaseConfig = {
-  apiKey: "AIzaSyADF4EHFyLVqUJCSJ5OOnMUmUIIQCsN0WU",
+  apiKey: "AIzaSyD_k5b7Q-E8z1m_e9xP-jZ_k6c9Y0f4w3A",
   authDomain: "backyard-bounty-5v5mw.firebaseapp.com",
   projectId: "backyard-bounty-5v5mw",
   storageBucket: "backyard-bounty-5v5mw.firebasestorage.app",
