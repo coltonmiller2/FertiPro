@@ -1,18 +1,18 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore"; // Import Firestore
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
+// This is a public configuration and is safe to expose.
 const firebaseConfig = {
-  apiKey: "AIzaSyAf4RJ-8SxddMoV8Oas_2cYjfauBkz83ds",
-  authDomain: "project-controls-hub.firebaseapp.com",
-  projectId: "project-controls-hub",
-  storageBucket: "project-controls-hub.firebasestorage.app",
-  messagingSenderId: "351226791458",
-  appId: "1:351226791458:web:f108b4822a971a430eac7b"
+  apiKey: "AIzaSyADF4EHFyLVqUJCSJ5OOnMUmUIIQCsN0WU",
+  authDomain: "backyard-bounty-5v5mw.firebaseapp.com",
+  projectId: "backyard-bounty-5v5mw",
+  storageBucket: "backyard-bounty-5v5mw.firebasestorage.app",
+  messagingSenderId: "172564531486",
+  appId: "1:172564531486:web:8325d37e40ee08a39a210f"
 };
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
