@@ -61,6 +61,9 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
   };
 
   const handleMouseUp = (e: MouseEvent) => {
+    if (draggingPlant) {
+      onUpdatePlantPosition(draggingPlant.id, layout[Object.keys(layout).find(k => layout[k] && Array.isArray((layout[k] as any).plants) && (layout[k] as any).plants.find((p: any) => p.id === draggingPlant.id)) || '']?.plants.find(p => p.id === draggingPlant.id)?.position as { x: number, y: number });
+    }
     setDraggingPlant(null);
   };
   
@@ -99,7 +102,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
             </filter>
             </defs>
 
-            <image href="https://i.imgur.com/7wkMw77.png" x="0" y="0" width="100" height="100" />
+            <image data-ai-hint="backyard map" href="https://placehold.co/1000x1000.png" x="0" y="0" width="100" height="100" />
 
             {Object.values(layout)
               .filter(isPlantCategory)

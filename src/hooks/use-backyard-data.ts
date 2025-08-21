@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { initialData } from '@/lib/initial-data';
 import type { BackyardLayout, Plant, Record as PlantRecord, PlantCategory } from '@/lib/types';
-import { db } from '@/lib/firebase'; // Import db from your firebase file
-import { doc, onSnapshot, setDoc } from "firebase/firestore"; // Import necessary firestore functions
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
 
 function fileToDataUri(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -19,21 +19,21 @@ function isPlantCategory(value: any): value is PlantCategory {
     return value && typeof value === 'object' && 'name' in value && 'color' in value && Array.isArray(value.plants);
 }
 
+const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
 
 export function useBackyardData() {
   const [layout, setLayout] = useState<BackyardLayout | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const layoutRef = doc(db, 'backyardLayouts', 'myLayout'); // Reference your layout document in Firestore
-
     const unsubscribe = onSnapshot(layoutRef, (docSnapshot) => {
       if (docSnapshot.exists()) {
-        const firestoreLayout = docSnapshot.data() as BackyardLayout;
-        setLayout(firestoreLayout);
+        setLayout(docSnapshot.data() as BackyardLayout);
       } else {
-        setLayout(initialData);
-        setDoc(layoutRef, initialData).catch(error => console.error("Error writing initial data:", error));
+        // Document doesn't exist, create it with initial data
+        setDoc(layoutRef, initialData)
+          .then(() => setLayout(initialData))
+          .catch(error => console.error("Error writing initial data:", error));
       }
       setLoading(false);
     }, (error) => {
@@ -42,29 +42,39 @@ export function useBackyardData() {
     });
 
     return () => unsubscribe();
-  }, [db]);
+  }, []);
 
-  const updatePlantPosition = useCallback(async (plantId: string, newPosition: { x: number; y: number }) => {
+  const updateFirestoreLayout = useCallback(async (newLayout: BackyardLayout) => {
+    try {
+      await setDoc(layoutRef, newLayout);
+    } catch (error) {
+      console.error("Error updating layout in Firestore:", error);
+      // Optionally: revert local state or show an error to the user
+    }
+  }, []);
+
+  const updatePlantPosition = useCallback((plantId: string, newPosition: { x: number; y: number }) => {
     if (!layout) return;
     const newLayout = structuredClone(layout);
+    let found = false;
     for (const categoryKey in newLayout) {
-        const category = newLayout[categoryKey];
-        if (isPlantCategory(category)) {
-            const plant = category.plants.find(p => p.id === plantId);
-            if (plant) {
-                plant.position = newPosition;
-                const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
-                await setDoc(layoutRef, newLayout)
-                    .catch(error => {
-                        console.error("Error updating plant position in Firestore:", error);
-                    });
-                return;
-            }
+      const category = newLayout[categoryKey];
+      if (isPlantCategory(category)) {
+        const plant = category.plants.find(p => p.id === plantId);
+        if (plant) {
+          plant.position = newPosition;
+          found = true;
+          break;
         }
+      }
     }
-  }, [layout, db]);
+    if (found) {
+      setLayout(newLayout); // Optimistic update
+      updateFirestoreLayout(newLayout);
+    }
+  }, [layout, updateFirestoreLayout]);
 
-  const addPlant = useCallback(async (categoryKey: string, plantType: string) => {
+  const addPlant = useCallback((categoryKey: string, plantType: string) => {
     if (!layout) return;
     const newLayout = structuredClone(layout);
     const category = newLayout[categoryKey];
@@ -84,72 +94,63 @@ export function useBackyardData() {
       records: [],
     };
     category.plants.push(newPlant);
-    const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
-    await setDoc(layoutRef, newLayout)
-        .catch(error => {
-            console.error("Error adding plant to Firestore:", error);
-        });
-  }, [layout, db]);
+    setLayout(newLayout);
+    updateFirestoreLayout(newLayout);
+  }, [layout, updateFirestoreLayout]);
 
-  const removePlant = useCallback(async (plantId: string) => {
+  const removePlant = useCallback((plantId: string) => {
     if (!layout) return;
     const newLayout = structuredClone(layout);
+    let found = false;
     for (const categoryKey in newLayout) {
-        const category = newLayout[categoryKey];
-        if (isPlantCategory(category)) {
-            const initialCount = category.plants.length;
-            category.plants = category.plants.filter(p => p.id !== plantId);
-            if (category.plants.length < initialCount) {
-                const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
-                await setDoc(layoutRef, newLayout)
-                    .catch(error => {
-                        console.error("Error removing plant from Firestore:", error);
-                    });
-                return;
-            }
+      const category = newLayout[categoryKey];
+      if (isPlantCategory(category)) {
+        const initialCount = category.plants.length;
+        category.plants = category.plants.filter(p => p.id !== plantId);
+        if (category.plants.length < initialCount) {
+          found = true;
+          break;
         }
+      }
     }
-  }, [layout, db]);
+    if (found) {
+      setLayout(newLayout);
+      updateFirestoreLayout(newLayout);
+    }
+  }, [layout, updateFirestoreLayout]);
 
   const addRecordToPlant = useCallback(async (plantId: string, record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => {
     if (!layout) return;
     const newRecord: PlantRecord = {
-        ...record,
-        id: Date.now(),
-        photoDataUri: photoFile ? await fileToDataUri(photoFile) : undefined,
+      ...record,
+      id: Date.now(),
+      photoDataUri: photoFile ? await fileToDataUri(photoFile) : undefined,
     };
     const newLayout = structuredClone(layout);
+    let found = false;
     for (const categoryKey in newLayout) {
-        const category = newLayout[categoryKey];
-        if (isPlantCategory(category)) {
-            const plant = category.plants.find(p => p.id === plantId);
-            if (plant) {
-                const latestRecord = plant.records[0];
-                if (latestRecord) {
-                    if (newRecord.trunkDiameter === undefined || newRecord.trunkDiameter === '') {
-                        newRecord.trunkDiameter = latestRecord.trunkDiameter;
-                    }
-                    if (newRecord.nextScheduledFertilizationDate === undefined || newRecord.nextScheduledFertilizationDate === null) {
-                        newRecord.nextScheduledFertilizationDate = latestRecord.nextScheduledFertilizationDate;
-                    }
-                }
-                plant.records.unshift(newRecord);
-                const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
-                await setDoc(layoutRef, newLayout)
-                    .catch(error => {
-                        console.error("Error adding record to plant in Firestore:", error);
-                    });
-                return;
-            }
+      const category = newLayout[categoryKey];
+      if (isPlantCategory(category)) {
+        const plant = category.plants.find(p => p.id === plantId);
+        if (plant) {
+          plant.records.unshift(newRecord);
+          found = true;
+          break;
         }
+      }
     }
-  }, [layout, db]);
-
+    if (found) {
+      setLayout(newLayout);
+      updateFirestoreLayout(newLayout);
+    }
+  }, [layout, updateFirestoreLayout]);
+  
   const addRecordToPlants = useCallback(async (plantIds: string[], record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => {
     if (!layout) return;
     const photoDataUri = photoFile ? await fileToDataUri(photoFile) : undefined;
     const newLayout = structuredClone(layout);
     let layoutChanged = false;
+
     for (const categoryKey in newLayout) {
         const category = newLayout[categoryKey];
         if (isPlantCategory(category)) {
@@ -157,7 +158,7 @@ export function useBackyardData() {
                 if (plantIds.includes(plant.id)) {
                     const newRecord: PlantRecord = {
                         ...record,
-                        id: Date.now() + Math.random(),
+                        id: Date.now() + Math.random(), // Add random to avoid collision in fast adds
                         photoDataUri: photoDataUri,
                     };
                     plant.records.unshift(newRecord);
@@ -167,13 +168,10 @@ export function useBackyardData() {
         }
     }
     if (layoutChanged) {
-      const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
-      await setDoc(layoutRef, newLayout)
-          .catch(error => {
-              console.error("Error adding records to plants in Firestore:", error);
-          });
+        setLayout(newLayout);
+        updateFirestoreLayout(newLayout);
     }
-  }, [layout, db]);
+  }, [layout, updateFirestoreLayout]);
 
   const updateRecordInPlant = useCallback(async (plantId: string, updatedRecord: PlantRecord, photoFile?: File) => {
     if (!layout) return;
@@ -190,17 +188,14 @@ export function useBackyardData() {
                 if (recordIndex !== -1) {
                     plant.records[recordIndex] = updatedRecord;
                     plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                    const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
-                    await setDoc(layoutRef, newLayout)
-                        .catch(error => {
-                            console.error("Error updating record in plant in Firestore:", error);
-                        });
+                    setLayout(newLayout);
+                    updateFirestoreLayout(newLayout);
                     return;
                 }
             }
         }
     }
-  }, [layout, db]);
+  }, [layout, updateFirestoreLayout]);
 
   const deleteRecordFromPlant = useCallback(async (plantId: string, recordId: number) => {
     if (!layout) return;
@@ -213,17 +208,14 @@ export function useBackyardData() {
                 const initialCount = plant.records.length;
                 plant.records = plant.records.filter(r => r.id !== recordId);
                 if (plant.records.length < initialCount) {
-                    const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
-                    await setDoc(layoutRef, newLayout)
-                        .catch(error => {
-                            console.error("Error deleting record from plant in Firestore:", error);
-                        });
+                    setLayout(newLayout);
+                    updateFirestoreLayout(newLayout);
                     return;
                 }
             }
         }
     }
-  }, [layout, db]);
+  }, [layout, updateFirestoreLayout]);
 
   const updatePlant = useCallback(async (plantId: string, updates: Partial<Plant>) => {
     if (!layout) return;
@@ -234,16 +226,13 @@ export function useBackyardData() {
             const plantIndex = category.plants.findIndex(p => p.id === plantId);
             if (plantIndex !== -1) {
                 category.plants[plantIndex] = { ...category.plants[plantIndex], ...updates };
-                const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
-                await setDoc(layoutRef, newLayout)
-                    .catch(error => {
-                        console.error("Error updating plant in Firestore:", error);
-                    });
-                    return;
-                }
+                setLayout(newLayout);
+                updateFirestoreLayout(newLayout);
+                return;
             }
         }
-  }, [layout, db]);
+    }
+  }, [layout, updateFirestoreLayout]);
 
   return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant, deleteRecordFromPlant };
 }
