@@ -7,8 +7,8 @@ import { getFirestore } from "firebase/firestore"; // Import Firestore
 const firebaseConfig = {
   apiKey: "AIzaSyD_k5b7Q-E8z1m_e9xP-jZ_k6c9Y0f4w3A",
   authDomain: "backyard-bounty-5v5mw.firebaseapp.com",
-  projectId: "project-controls-hub",
-  storageBucket: "backyard-bounty-5v5mw.firebasestorage.app",
+  projectId: "backyard-bounty-5v5mw",
+  storageBucket: "backyard-bounty-5v5mw.appspot.com",
   messagingSenderId: "172564531486",
   appId: "1:172564531486:web:8325d37e40ee08a39a210f"
 };
