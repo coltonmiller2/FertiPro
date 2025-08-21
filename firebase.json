@@ -1,6 +1,7 @@
+
 {
   "firestore": {
-    "database": "(default)",
+    "database": "backyard-bounty-5v5mw",
     "location": "nam5",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
