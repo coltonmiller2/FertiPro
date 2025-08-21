@@ -17,7 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Get Firestore instance for the specific database
-const db = getFirestore(app);
+const db = getFirestore(app, '(default)');
 
 // Export Firestore instance
 export { db };
