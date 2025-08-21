@@ -61,9 +61,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
   };
 
   const handleMouseUp = (e: MouseEvent) => {
-    if (draggingPlant) {
-      onUpdatePlantPosition(draggingPlant.id, layout[Object.keys(layout).find(k => layout[k] && Array.isArray((layout[k] as any).plants) && (layout[k] as any).plants.find((p: any) => p.id === draggingPlant.id)) || '']?.plants.find(p => p.id === draggingPlant.id)?.position as { x: number, y: number });
-    }
+    // No need to call onUpdatePlantPosition on mouse up, it is now handled in handleMouseMove for real-time updates
     setDraggingPlant(null);
   };
   
@@ -102,7 +100,12 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
             </filter>
             </defs>
 
-            <image data-ai-hint="backyard map" href="https://placehold.co/1000x1000.png" x="0" y="0" width="100" height="100" />
+            {/* SVG Background */}
+            <rect width="100" height="100" fill="#f0f0f0" />
+            <rect data-ai-hint="grass lawn" x="10" y="10" width="80" height="80" fill="#a3bf63" rx="5" ry="5" />
+            <rect data-ai-hint="patio deck" x="10" y="75" width="80" height="15" fill="#d2c3a8" />
+            <path d="M 10 75 Q 10 70 15 70 H 85 Q 90 70 90 75" fill="#d2c3a8" />
+            
 
             {Object.values(layout)
               .filter(isPlantCategory)
