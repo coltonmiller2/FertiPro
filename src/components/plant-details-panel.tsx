@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -38,6 +39,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { AITreatmentSuggestion } from './ai-suggestion';
 
 
 interface PlantDetailsPanelProps {
@@ -368,7 +370,7 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
                                 </Form>
                                 </CardContent>
                             </Card>
-                            {/* <AITreatmentSuggestion plant={plant} /> */}
+                            <AITreatmentSuggestion plant={plant} />
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
@@ -481,3 +483,4 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     </div>
   );
 }
+

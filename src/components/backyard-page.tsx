@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -12,6 +13,7 @@ import { TableView } from '@/components/table-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { BulkUpdatePanel } from '@/components/bulk-update-panel';
+import { AITreatmentSuggestion } from './ai-suggestion';
 
 function isPlantCategory(value: any): value is PlantCategory {
     return value && typeof value === 'object' && 'name' in value && 'color' in value && Array.isArray(value.plants);
@@ -118,7 +120,7 @@ export function BackyardPage() {
   const showRightPanel = showDetailsPanel || showBulkUpdatePanel;
 
 
-  if (loading || !layout) {
+  if (loading) {
     return (
       <div className="flex h-screen w-screen flex-col bg-background font-sans overflow-hidden">
           <header className="flex h-14 items-center justify-between border-b bg-background px-4 lg:px-6 shrink-0 z-10">
@@ -136,6 +138,14 @@ export function BackyardPage() {
         </main>
       </div>
     );
+  }
+
+  if (!layout) {
+    return (
+        <div className="flex h-screen w-screen items-center justify-center">
+            <p>Could not load backyard data.</p>
+        </div>
+    )
   }
 
   return (
