@@ -3,7 +3,7 @@
 import React, { useState, useRef, MouseEvent } from 'react';
 import type { BackyardLayout, Plant, PlantCategory } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { BackyardSvg } from './backyard-svg';
+import YardBackground from '@/components/yard-background';
 
 interface BackyardMapProps {
   layout: Omit<BackyardLayout, 'version'>;
@@ -55,8 +55,8 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
     const newY = point.y + draggingPlant.offset.y;
     
     // Clamp positions within viewBox
-    const clampedX = Math.max(0, Math.min(1000, newX));
-    const clampedY = Math.max(0, Math.min(1100, newY));
+    const clampedX = Math.max(0, Math.min(639, newX));
+    const clampedY = Math.max(0, Math.min(729, newY));
 
     onUpdatePlantPosition(draggingPlant.id, { x: clampedX, y: clampedY });
   };
@@ -80,24 +80,25 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
       className="p-4 md:p-8 flex items-center justify-center h-full w-full"
     >
       <div
-        className="relative w-full h-full max-w-[1000px] max-h-[1000px] bg-white shadow-2xl rounded-lg aspect-square"
+        className="relative w-full h-full max-w-[640px] max-h-[729px] bg-white shadow-2xl rounded-lg"
+        style={{ aspectRatio: '639.33 / 728.67' }}
       >
         <svg
             ref={svgRef}
-            viewBox="0 0 1000 1100"
+            viewBox="0 0 639.33331 728.66669"
             className="w-full h-full"
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
         >
-            <BackyardSvg />
+            <YardBackground aria-hidden />
             
             {Object.values(layout)
               .filter(isPlantCategory)
               .map((category) =>
               category.plants.map((plant) => {
                 const isSelected = selectedPlantIds.includes(plant.id);
-                const scale = 40; // Increased scale for larger symbols
+                const scale = 40;
                 return (
                   <g
                   key={plant.id}
