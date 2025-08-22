@@ -97,7 +97,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
               .map((category) =>
               category.plants.map((plant) => {
                 const isSelected = selectedPlantIds.includes(plant.id);
-                const scale = 20;
+                const scale = 40; // Increased scale for larger symbols
                 return (
                   <g
                   key={plant.id}
