@@ -1,0 +1,17 @@
+
+{
+  "typescript": true,
+  "icon": false,
+  "expandProps": "end",
+  "ref": false,
+  "memo": false,
+  "svgo": true,
+  "svgoConfig": {
+    "extends": "./svgo.config.js"
+  },
+  "jsxRuntime": "automatic",
+  "replaceAttrValues": {
+    "none": "currentColor"
+  },
+  "prettier": true
+}
