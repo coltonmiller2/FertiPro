@@ -3,6 +3,7 @@
 import React, { useState, useRef, MouseEvent } from 'react';
 import type { BackyardLayout, Plant, PlantCategory } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { BackyardSvg } from './backyard-svg';
 
 interface BackyardMapProps {
   layout: Omit<BackyardLayout, 'version'>;
@@ -54,8 +55,8 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
     const newY = point.y + draggingPlant.offset.y;
     
     // Clamp positions within viewBox
-    const clampedX = Math.max(0, Math.min(100, newX));
-    const clampedY = Math.max(0, Math.min(100, newY));
+    const clampedX = Math.max(0, Math.min(1000, newX));
+    const clampedY = Math.max(0, Math.min(1100, newY));
 
     onUpdatePlantPosition(draggingPlant.id, { x: clampedX, y: clampedY });
   };
@@ -83,19 +84,20 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
       >
         <svg
             ref={svgRef}
-            viewBox="0 0 100 100"
+            viewBox="0 0 1000 1100"
             className="w-full h-full"
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
         >
-            <image href="https://placehold.co/1000x1000.png" x="0" y="0" width="100" height="100" />
+            <BackyardSvg />
             
             {Object.values(layout)
               .filter(isPlantCategory)
               .map((category) =>
               category.plants.map((plant) => {
                 const isSelected = selectedPlantIds.includes(plant.id);
+                const scale = 20;
                 return (
                   <g
                   key={plant.id}
@@ -105,20 +107,20 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
                   onClick={(e) => handleClick(e, plant.id)}
                   >
                   <circle
-                      r="2.2"
+                      r={scale * 0.22}
                       fill={category.color}
                       stroke="white"
-                      strokeWidth="0.3"
+                      strokeWidth={scale * 0.03}
                       className={cn("transition-all", isSelected && "stroke-accent" )}
                       style={{
-                          filter: isSelected ? 'drop-shadow(0 0 1px hsl(var(--accent)))' : 'drop-shadow(0px 1px 1px rgba(0,0,0,0.3))'
+                          filter: isSelected ? 'drop-shadow(0 0 10px hsl(var(--accent)))' : 'drop-shadow(0px 1px 1px rgba(0,0,0,0.3))'
                       }}
                   />
                   <circle
-                      r="2.2"
+                      r={scale * 0.22}
                       fill="transparent"
                       stroke={isSelected ? 'hsl(var(--accent))' : 'transparent'}
-                      strokeWidth="0.5"
+                      strokeWidth={scale * 0.05}
                   />
                   <text
                       x="0"
@@ -126,7 +128,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
                       dy="0.05em"
                       textAnchor="middle"
                       alignmentBaseline="middle"
-                      fontSize="1.6"
+                      fontSize={scale * 0.16}
                       fontWeight="bold"
                       fill="white"
                       className="pointer-events-none select-none"
