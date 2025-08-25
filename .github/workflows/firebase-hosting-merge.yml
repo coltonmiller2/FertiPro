@@ -17,7 +17,7 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUDIO }}'
           channelId: live
-          projectId: prototype-hub-62bx8 # <-- IMPORTANT: Add your Project ID here
+          projectId: backyard-bounty-5v5mw # <-- IMPORTANT: Add your Project ID here
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
           

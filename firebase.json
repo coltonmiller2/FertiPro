@@ -9,7 +9,7 @@
     ]
   },
   "firestore": {
-    "database": "(default)",
+    "database": "backyard-bounty-5v5mw",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   }
