@@ -136,10 +136,16 @@ export function useBackyardData() {
 
   const addRecordToPlant = useCallback(async (plantId: string, record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => {
     if (!layout) return;
+
+    let photoDataUri: string | undefined = undefined;
+    if (photoFile) {
+        photoDataUri = await fileToDataUri(photoFile);
+    }
+    
     const newRecord: PlantRecord = {
       ...record,
       id: Date.now(),
-      photoDataUri: photoFile ? await fileToDataUri(photoFile) : undefined,
+      photoDataUri: photoDataUri,
     };
     const newLayout = structuredClone(layout);
     let found = false;
