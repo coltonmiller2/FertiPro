@@ -79,7 +79,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
     onSelectPlant(plantId, isMultiSelect);
   };
   
-  const scale = 80;
+  const scale = 100;
 
   return (
     <div
