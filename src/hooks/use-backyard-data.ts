@@ -47,11 +47,25 @@ function getCategoryKeys(layout: BackyardLayout): CategoryKey<BackyardLayout>[] 
   );
 }
 
-// --- NEW: no top-level await; dynamically import Storage when needed
-async function uploadPhotoIfPossible(
-  path: string,
-  file: File
-): Promise<string> {
+/** Recursively remove all `undefined` fields (Firestore rejects undefined). */
+function deepStripUndefined<T>(value: T): T {
+  if (Array.isArray(value)) {
+    // @ts-expect-error preserve shape
+    return value.map((v) => deepStripUndefined(v)) as T;
+  }
+  if (value && typeof value === "object") {
+    const out: any = Array.isArray(value) ? [] : {};
+    for (const [k, v] of Object.entries(value as any)) {
+      if (v === undefined) continue;
+      out[k] = deepStripUndefined(v);
+    }
+    return out;
+  }
+  return value;
+}
+
+/** Upload photo to Firebase Storage if available; otherwise fall back to Data URI. */
+async function uploadPhotoIfPossible(path: string, file: File): Promise<string> {
   try {
     const mod = await import("firebase/storage");
     const { getStorage, ref, uploadBytes, getDownloadURL } = mod;
@@ -60,7 +74,6 @@ async function uploadPhotoIfPossible(
     await uploadBytes(r, file);
     return getDownloadURL(r);
   } catch {
-    // Storage not configured or runtime import failed; fallback to Data URI
     return fileToDataUri(file);
   }
 }
@@ -74,31 +87,25 @@ export function useBackyardData(docId: string = "myLayout") {
     useState<ConnectionStatus>("connecting");
   const [lastError, setLastError] = useState<string | null>(null);
 
-  // Avoid echoing our own writes back into state in a noisy way (reserved for future needs)
   const isApplyingRemoteRef = useRef(false);
-
-  // FIX: useRef expects a value, not a function
   const instanceIdRef = useRef<string>(Math.random().toString(36).slice(2));
 
-  // Debounced Firestore updater
+  /** Debounced Firestore writer – always strips undefined before writing. */
   const debouncedUpdateFirestore = useMemo(
     () =>
       debounce(
         async (newLayout: BackyardLayout) => {
           try {
             setLastError(null);
-            await setDoc(
-              layoutRef,
-              {
-                ...newLayout,
-                meta: {
-                  ...(newLayout as any).meta,
-                  updatedAt: serverTimestamp(),
-                  lastUpdatedBy: instanceIdRef.current,
-                },
+            const payload = deepStripUndefined({
+              ...newLayout,
+              meta: {
+                ...(newLayout as any).meta,
+                updatedAt: serverTimestamp(),
+                lastUpdatedBy: instanceIdRef.current,
               },
-              { merge: true }
-            );
+            });
+            await setDoc(layoutRef, payload, { merge: true });
             setConnectionStatus("connected");
           } catch (error: any) {
             console.error("Error updating layout in Firestore:", error);
@@ -116,7 +123,7 @@ export function useBackyardData(docId: string = "myLayout") {
     return () => debouncedUpdateFirestore.cancel();
   }, [debouncedUpdateFirestore]);
 
-  // Subscribe / bootstrap doc
+  /** Subscribe / bootstrap doc */
   useEffect(() => {
     setLoading(true);
     setConnectionStatus("connecting");
@@ -128,17 +135,14 @@ export function useBackyardData(docId: string = "myLayout") {
       async (snap) => {
         try {
           if (!snap.exists()) {
-            await setDoc(
-              layoutRef,
-              {
-                ...initialData,
-                meta: {
-                  updatedAt: serverTimestamp(),
-                  lastUpdatedBy: instanceIdRef.current,
-                },
+            const payload = deepStripUndefined({
+              ...initialData,
+              meta: {
+                updatedAt: serverTimestamp(),
+                lastUpdatedBy: instanceIdRef.current,
               },
-              { merge: true }
-            );
+            });
+            await setDoc(layoutRef, payload, { merge: true });
             setLayout(initialData);
             setConnectionStatus("connected");
             setLoading(false);
@@ -172,7 +176,7 @@ export function useBackyardData(docId: string = "myLayout") {
 
   const updateLayout = useCallback(
     (newLayout: BackyardLayout) => {
-      setLayout(newLayout); // optimistic local
+      setLayout(newLayout); // optimistic
       debouncedUpdateFirestore(newLayout);
     },
     [debouncedUpdateFirestore]
@@ -262,16 +266,16 @@ export function useBackyardData(docId: string = "myLayout") {
     ) => {
       if (!layout) return;
 
-      let photoDataUri: string | undefined = undefined;
+      let photoData: string | undefined;
       if (photoFile) {
         const path = `backyardLayouts/${docId}/plants/${plantId}/records/${Date.now()}-${photoFile.name}`;
-        photoDataUri = await uploadPhotoIfPossible(path, photoFile);
+        photoData = await uploadPhotoIfPossible(path, photoFile);
       }
 
       const newRecord: PlantRecord = {
         ...record,
         id: Date.now(),
-        photoDataUri, // remains undefined if no file provided
+        ...(photoData ? { photoDataUri: photoData } : {}),
       };
 
       const newLayout = structuredClone(layout);
@@ -296,7 +300,7 @@ export function useBackyardData(docId: string = "myLayout") {
     ) => {
       if (!layout) return;
 
-      let sharedPhoto: string | undefined = undefined;
+      let sharedPhoto: string | undefined;
       if (photoFile) {
         const path = `backyardLayouts/${docId}/bulk/${Date.now()}-${photoFile.name}`;
         sharedPhoto = await uploadPhotoIfPossible(path, photoFile);
@@ -312,7 +316,7 @@ export function useBackyardData(docId: string = "myLayout") {
             const newRecord: PlantRecord = {
               ...record,
               id: Date.now() + Math.random(),
-              photoDataUri: sharedPhoto, // undefined if no file provided
+              ...(sharedPhoto ? { photoDataUri: sharedPhoto } : {}),
             };
             category.plants[idx].records = [
               newRecord,
@@ -348,7 +352,12 @@ export function useBackyardData(docId: string = "myLayout") {
       const idx = plant.records.findIndex((r) => r.id === updatedRecord.id);
       if (idx === -1) return;
 
-      plant.records[idx] = { ...updatedRecord, photoDataUri: photoUrl };
+      const nextRecord: PlantRecord = {
+        ...updatedRecord,
+        ...(photoUrl ? { photoDataUri: photoUrl } : {}),
+      };
+
+      plant.records[idx] = nextRecord;
       plant.records.sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
@@ -407,17 +416,14 @@ export function useBackyardData(docId: string = "myLayout") {
 
   const resetToInitial = useCallback(async () => {
     try {
-      await setDoc(
-        layoutRef,
-        {
-          ...initialData,
-          meta: {
-            updatedAt: serverTimestamp(),
-            lastUpdatedBy: instanceIdRef.current,
-          },
+      const payload = deepStripUndefined({
+        ...initialData,
+        meta: {
+          updatedAt: serverTimestamp(),
+          lastUpdatedBy: instanceIdRef.current,
         },
-        { merge: false }
-      );
+      });
+      await setDoc(layoutRef, payload, { merge: false });
       setLayout(initialData);
       setConnectionStatus("connected");
       setLastError(null);
