@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, signInWithRedirect, GoogleAuthProvider, User, signOut, getRedirectResult } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User, signOut, getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -31,26 +31,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Check for redirect result on initial load
-    getRedirectResult(auth)
-      .catch((error) => {
-        console.error("Error getting redirect result:", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-
     return () => unsubscribe();
   }, []);
 
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      // Use signInWithRedirect instead of signInWithPopup
-      await signInWithRedirect(auth, provider);
+      await signInWithPopup(auth, provider);
     } catch (error) {
       console.error("Error signing in with Google: ", error);
-      // Auth state change will set loading to false in the onAuthStateChanged listener
+    } finally {
+      setLoading(false);
     }
   };
 
