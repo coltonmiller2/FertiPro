@@ -481,5 +481,3 @@ export function PlantDetailsPanel({ plant, category, onClose, onAddRecord, onUpd
     </div>
   );
 }
-
-    

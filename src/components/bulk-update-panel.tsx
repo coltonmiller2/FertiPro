@@ -72,7 +72,7 @@ export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: Bu
         notes: "",
         phLevel: "",
         moistureLevel: "",
-        photo: null
+        photo: undefined
     });
     const photoInput = document.querySelector('input[name="photo"]') as HTMLInputElement | null;
     if (photoInput) {
@@ -215,5 +215,3 @@ export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: Bu
     </div>
   );
 }
-
-    
