@@ -1,8 +1,7 @@
-
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore, initializeFirestore } from "firebase/firestore"; // Import Firestore
-import { getAuth } from "firebase/auth";
+import { getAuth, initializeAuth, browserLocalPersistence } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // This is a public configuration and is safe to expose.
@@ -23,8 +22,10 @@ const db = initializeFirestore(app, {
   localCache: { kind: 'persistent' },
 });
 
-// Initialize Firebase Authentication and get a reference to the service
-const auth = getAuth(app);
+// Initialize Firebase Authentication with persistence to work correctly in this environment
+const auth = initializeAuth(app, {
+  persistence: browserLocalPersistence,
+});
 
 // Export instances
 export { db, auth, app };
