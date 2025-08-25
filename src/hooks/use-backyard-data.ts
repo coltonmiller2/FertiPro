@@ -15,6 +15,7 @@ import {
   doc,
   onSnapshot,
   setDoc,
+  updateDoc,
   serverTimestamp,
   getDoc,
 } from "firebase/firestore";
@@ -29,8 +30,7 @@ try {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const { getStorage, ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
-  const { app } = await import("@/lib/firebase");
-  const storage = getStorage(app);
+  const storage = getStorage();
   storageFns = {
     async upload(path: string, file: File) {
       const r = ref(storage, path);
