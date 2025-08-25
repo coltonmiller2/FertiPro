@@ -32,8 +32,34 @@ const getFilteredLayout = (layout: BackyardLayout | null): Omit<BackyardLayout, 
     return filteredLayout;
 }
 
+const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' | 'error' }> = ({ status }) => {
+    const statusConfig = {
+        connecting: {
+            color: 'bg-yellow-500',
+            text: 'Connecting...',
+        },
+        connected: {
+            color: 'bg-green-500',
+            text: 'Connected',
+        },
+        error: {
+            color: 'bg-red-500',
+            text: 'Connection Error',
+        },
+    };
+
+    const { color, text } = statusConfig[status];
+
+    return (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className={cn('h-2 w-2 rounded-full animate-pulse', color)} />
+            <span>{text}</span>
+        </div>
+    );
+};
+
 export function BackyardPage() {
-  const { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant, deleteRecordFromPlant } = useBackyardData();
+  const { layout, loading, connectionStatus, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant, deleteRecordFromPlant } = useBackyardData();
   const [selectedPlantIds, setSelectedPlantIds] = useState<string[]>([]);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
@@ -147,9 +173,12 @@ export function BackyardPage() {
   return (
     <div className="flex h-screen flex-col bg-background font-sans">
       <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6 z-10">
-        <div className="flex items-center gap-2 font-semibold">
-          <Leaf className="h-6 w-6 text-primary" />
-          <span>Backyard Bounty</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 font-semibold">
+            <Leaf className="h-6 w-6 text-primary" />
+            <span>Backyard Bounty</span>
+          </div>
+          <ConnectionStatusIndicator status={connectionStatus} />
         </div>
         <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => setViewMode(viewMode === 'map' ? 'table' : 'map')}>

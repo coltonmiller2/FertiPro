@@ -7,6 +7,8 @@ import { db } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
 import debounce from 'lodash.debounce';
 
+type ConnectionStatus = 'connecting' | 'connected' | 'error';
+
 function fileToDataUri(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -25,11 +27,13 @@ const layoutRef = doc(db, 'backyardLayouts', 'myLayout');
 export function useBackyardData() {
   const [layout, setLayout] = useState<BackyardLayout | null>(null);
   const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
 
   // Debounced function to update Firestore
   const debouncedUpdateFirestore = useCallback(debounce((newLayout: BackyardLayout) => {
     setDoc(layoutRef, newLayout, { merge: true }).catch(error => {
       console.error("Error updating layout in Firestore:", error);
+      setConnectionStatus('error');
     });
   }, 500), []);
 
@@ -38,14 +42,22 @@ export function useBackyardData() {
     const unsubscribe = onSnapshot(layoutRef, (docSnapshot) => {
       if (docSnapshot.exists()) {
         setLayout(docSnapshot.data() as BackyardLayout);
+        setConnectionStatus('connected');
       } else {
         setDoc(layoutRef, initialData)
-          .then(() => setLayout(initialData))
-          .catch(error => console.error("Error writing initial data:", error));
+          .then(() => {
+            setLayout(initialData);
+            setConnectionStatus('connected');
+          })
+          .catch(error => {
+            console.error("Error writing initial data:", error);
+            setConnectionStatus('error');
+          });
       }
       setLoading(false);
     }, (error) => {
       console.error('Error fetching backyard layout:', error);
+      setConnectionStatus('error');
       setLoading(false);
     });
 
@@ -237,5 +249,5 @@ export function useBackyardData() {
     }
   }, [layout, updateLayout]);
 
-  return { layout, loading, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant, deleteRecordFromPlant };
+  return { layout, loading, connectionStatus, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant, deleteRecordFromPlant };
 }
