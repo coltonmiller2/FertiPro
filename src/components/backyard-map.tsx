@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, MouseEvent } from 'react';
@@ -15,6 +16,9 @@ interface BackyardMapProps {
 function isPlantCategory(value: any): value is PlantCategory {
     return value && typeof value === 'object' && Array.isArray(value.plants);
 }
+
+const VIEWBOX_WIDTH = 639.33331;
+const VIEWBOX_HEIGHT = 728.66669;
 
 export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdatePlantPosition }: BackyardMapProps) {
   const [draggingPlant, setDraggingPlant] = useState<{ id: string; offset: { x: number; y: number } } | null>(null);
@@ -55,8 +59,8 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
     const newY = point.y + draggingPlant.offset.y;
     
     // Clamp positions within viewBox
-    const clampedX = Math.max(0, Math.min(639, newX));
-    const clampedY = Math.max(0, Math.min(729, newY));
+    const clampedX = Math.max(0, Math.min(VIEWBOX_WIDTH, newX));
+    const clampedY = Math.max(0, Math.min(VIEWBOX_HEIGHT, newY));
 
     onUpdatePlantPosition(draggingPlant.id, { x: clampedX, y: clampedY });
   };
@@ -75,6 +79,8 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
     onSelectPlant(plantId, isMultiSelect);
   };
   
+  const scale = VIEWBOX_WIDTH / 16; // Dynamically calculate scale
+
   return (
     <div
       className="p-4 md:p-8 flex items-center justify-center h-full w-full"
@@ -85,7 +91,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
       >
         <svg
             ref={svgRef}
-            viewBox="0 0 639.33331 728.66669"
+            viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
             className="w-full h-full"
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -98,7 +104,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
               .map((category) =>
               category.plants.map((plant) => {
                 const isSelected = selectedPlantIds.includes(plant.id);
-                const scale = 40;
+                
                 return (
                   <g
                   key={plant.id}
