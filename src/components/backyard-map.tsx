@@ -97,7 +97,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
         >
-             <image href="https://placehold.co/1000x1000.png" x="0" y="0" width="100%" height="100%" data-ai-hint="backyard map" />
+             <image href="https://i.imgur.com/7wkMw77.png" x="0" y="0" width="100%" height="100%" />
             
             {Object.values(layout)
               .filter(isPlantCategory)
@@ -151,4 +151,3 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
     </div>
   );
 }
-
