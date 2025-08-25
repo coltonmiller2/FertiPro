@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User, signOut } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signInWithRedirect, GoogleAuthProvider, User, signOut } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -38,11 +38,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      await signInWithPopup(auth, provider);
+      // Use signInWithRedirect instead of signInWithPopup
+      await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Error signing in with Google: ", error);
-    } finally {
-        // Auth state change will set loading to false
+      // Auth state change will set loading to false in the onAuthStateChanged listener
     }
   };
 
