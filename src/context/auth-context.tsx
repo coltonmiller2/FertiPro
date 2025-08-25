@@ -27,25 +27,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-        setLoading(false);
-      } else {
-        // This handles the case where the user is not logged in, but also after a redirect.
-        getRedirectResult(auth)
-          .then((result) => {
-            if (result && result.user) {
-              setUser(result.user);
-            }
-          })
-          .catch((error) => {
-            console.error("Error getting redirect result:", error);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
-      }
+      setUser(user);
+      setLoading(false);
     });
+
+    // Also check for redirect result on initial load
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          setUser(result.user);
+        }
+      })
+      .catch((error) => {
+        console.error("Error processing redirect result:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
     return () => unsubscribe();
   }, []);
@@ -53,11 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      // Use signInWithRedirect instead of signInWithPopup
+      // Use signInWithRedirect as it is more robust in this environment
       await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Error signing in with Google: ", error);
-      // Auth state change will set loading to false in the onAuthStateChanged listener
+      setLoading(false); 
     }
   };
 
