@@ -2,8 +2,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, signInWithRedirect, GoogleAuthProvider, User, signOut } from 'firebase/auth';
-import { app } from '@/lib/firebase';
+import { onAuthStateChanged, signInWithRedirect, GoogleAuthProvider, User, signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -19,7 +19,6 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
 });
 
-const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 export function AuthProvider({ children }: { children: ReactNode }) {
