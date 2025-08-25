@@ -49,18 +49,24 @@ function getCategoryKeys(layout: BackyardLayout): CategoryKey<BackyardLayout>[] 
 
 /** Recursively remove all `undefined` fields (Firestore rejects undefined). */
 function deepStripUndefined<T>(value: T): T {
-  if (Array.isArray(value)) {
-    // @ts-expect-error preserve shape
-    return value.map((v) => deepStripUndefined(v)) as T;
+  // Arrays
+  if (Array.isArray(value as unknown[])) {
+    const arr = (value as unknown[]).map((v) => deepStripUndefined(v));
+    return arr as unknown as T;
   }
+
+  // Plain objects
   if (value && typeof value === "object") {
-    const out: any = Array.isArray(value) ? [] : {};
-    for (const [k, v] of Object.entries(value as any)) {
-      if (v === undefined) continue;
+    const input = value as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(input)) {
+      if (v === undefined) continue; // drop undefined
       out[k] = deepStripUndefined(v);
     }
-    return out;
+    return out as unknown as T;
   }
+
+  // Primitives (and functions) pass through
   return value;
 }
 
@@ -74,6 +80,7 @@ async function uploadPhotoIfPossible(path: string, file: File): Promise<string> 
     await uploadBytes(r, file);
     return getDownloadURL(r);
   } catch {
+    // Storage not configured or failed; fallback to inline Data URI
     return fileToDataUri(file);
   }
 }
