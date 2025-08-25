@@ -168,7 +168,12 @@ export function useBackyardData() {
   
   const addRecordToPlants = useCallback(async (plantIds: string[], record: Omit<PlantRecord, 'id' | 'photoDataUri'>, photoFile?: File) => {
     if (!layout) return;
-    const photoDataUri = photoFile ? await fileToDataUri(photoFile) : undefined;
+
+    let photoDataUri: string | undefined = undefined;
+    if (photoFile) {
+        photoDataUri = await fileToDataUri(photoFile);
+    }
+
     const newLayout = structuredClone(layout);
     let layoutChanged = false;
 
@@ -196,10 +201,13 @@ export function useBackyardData() {
 
   const updateRecordInPlant = useCallback(async (plantId: string, updatedRecord: PlantRecord, photoFile?: File) => {
     if (!layout) return;
+    
     const newLayout = structuredClone(layout);
+    
     if (photoFile) {
         updatedRecord.photoDataUri = await fileToDataUri(photoFile);
     }
+
     for (const categoryKey in newLayout) {
         if (categoryKey === 'version') continue;
         const category = newLayout[categoryKey];
@@ -208,6 +216,10 @@ export function useBackyardData() {
             if (plant) {
                 const recordIndex = plant.records.findIndex(r => r.id === updatedRecord.id);
                 if (recordIndex !== -1) {
+                    // Preserve old photo if no new one is uploaded
+                    if (!photoFile && plant.records[recordIndex].photoDataUri) {
+                        updatedRecord.photoDataUri = plant.records[recordIndex].photoDataUri;
+                    }
                     plant.records[recordIndex] = updatedRecord;
                     plant.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     updateLayout(newLayout);
