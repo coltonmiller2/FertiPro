@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"; // Import Firestore
+import { getFirestore, initializeFirestore } from "firebase/firestore"; // Import Firestore
 
 // Your web app's Firebase configuration
 // This is a public configuration and is safe to expose.
@@ -16,8 +16,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Get Firestore instance for the specific database
-const db = getFirestore(app);
+// Initialize Firestore with persistent cache settings for better stability
+const db = initializeFirestore(app, {
+  localCache: { kind: 'persistent' },
+  persistentCache: { tabManager: { kind: 'single-tab' } },
+});
+
 
 // Export Firestore instance
 export { db };
