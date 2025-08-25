@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User, signOut, getRedirectResult } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User, signOut, getRedirectResult, signInWithRedirect } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -27,8 +27,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
+      if (user) {
+        setUser(user);
+        setLoading(false);
+      } else {
+        // This handles the case where the user is not logged in, but also after a redirect.
+        getRedirectResult(auth)
+          .then((result) => {
+            if (result && result.user) {
+              setUser(result.user);
+            }
+          })
+          .catch((error) => {
+            console.error("Error getting redirect result:", error);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      }
     });
 
     return () => unsubscribe();
@@ -37,17 +53,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      await signInWithPopup(auth, provider);
+      // Use signInWithRedirect instead of signInWithPopup
+      await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Error signing in with Google: ", error);
-    } finally {
-      setLoading(false);
+      // Auth state change will set loading to false in the onAuthStateChanged listener
     }
   };
 
   const logout = async () => {
     try {
       await signOut(auth);
+      setUser(null);
     } catch (error) {
       console.error("Error signing out: ", error);
     }
