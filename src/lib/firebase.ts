@@ -5,12 +5,12 @@ import { getFirestore, initializeFirestore } from "firebase/firestore"; // Impor
 // Your web app's Firebase configuration
 // This is a public configuration and is safe to expose.
 const firebaseConfig = {
-  apiKey: "AIzaSyD_k5b7Q-E8z1m_e9xP-jZ_k6c9Y0f4w3A",
-  authDomain: "backyard-bounty-5v5mw.firebaseapp.com",
-  projectId: "backyard-bounty-5v5mw",
-  storageBucket: "backyard-bounty-5v5mw.appspot.com",
-  messagingSenderId: "172564531486",
-  appId: "1:172564531486:web:8325d37e40ee08a39a210f"
+  apiKey: "AIzaSyCTlA0IBbhTmV_K6HVcn4ZB7qDg1HRfXDA",
+  authDomain: "prototype-hub-62bx8.firebaseapp.com",
+  projectId: "prototype-hub-62bx8",
+  storageBucket: "prototype-hub-62bx8.appspot.com",
+  messagingSenderId: "647561680320",
+  appId: "1:647561680320:web:6715fbafea658f8fcae425"
 };
 
 // Initialize Firebase
