@@ -4,7 +4,6 @@
 import React, { useState, useRef, MouseEvent } from 'react';
 import type { BackyardLayout, Plant, PlantCategory } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import YardBackground from '@/components/yard-background';
 
 interface BackyardMapProps {
   layout: Omit<BackyardLayout, 'version'>;
@@ -17,8 +16,9 @@ function isPlantCategory(value: any): value is PlantCategory {
     return value && typeof value === 'object' && Array.isArray(value.plants);
 }
 
-const VIEWBOX_WIDTH = 639.33331;
-const VIEWBOX_HEIGHT = 728.66669;
+const VIEWBOX_WIDTH = 1000;
+const VIEWBOX_HEIGHT = 1000;
+
 
 export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdatePlantPosition }: BackyardMapProps) {
   const [draggingPlant, setDraggingPlant] = useState<{ id: string; offset: { x: number; y: number } } | null>(null);
@@ -79,15 +79,15 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
     onSelectPlant(plantId, isMultiSelect);
   };
   
-  const scale = VIEWBOX_WIDTH / 16; // Dynamically calculate scale
+  const scale = 40;
 
   return (
     <div
       className="p-4 md:p-8 flex items-center justify-center h-full w-full"
     >
       <div
-        className="relative w-full h-full max-w-[640px] max-h-[729px] bg-white shadow-2xl rounded-lg"
-        style={{ aspectRatio: '639.33 / 728.67' }}
+        className="relative w-full h-full max-w-[1000px] max-h-[1000px] bg-background shadow-2xl rounded-lg"
+        style={{ aspectRatio: '1 / 1' }}
       >
         <svg
             ref={svgRef}
@@ -97,7 +97,7 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
         >
-            <YardBackground aria-hidden />
+             <image href="https://placehold.co/1000x1000.png" x="0" y="0" width="100%" height="100%" data-ai-hint="backyard map" />
             
             {Object.values(layout)
               .filter(isPlantCategory)
@@ -151,3 +151,4 @@ export function BackyardMap({ layout, selectedPlantIds, onSelectPlant, onUpdateP
     </div>
   );
 }
+
