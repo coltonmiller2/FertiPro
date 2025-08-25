@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -55,8 +56,6 @@ export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: Bu
     const photoFile = values.photo?.[0];
     const plantIds = selectedPlants.map(p => p.id);
     
-    // --- THIS IS THE CORRECTED SECTION ---
-    // Create a record object that ensures optional fields are empty strings, not undefined.
     const recordData = {
       date: format(values.date, 'yyyy-MM-dd'),
       treatment: values.treatment,
@@ -66,7 +65,6 @@ export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: Bu
     };
     
     onBulkAddRecord(plantIds, recordData, photoFile);
-    // --- END OF CORRECTION ---
 
     form.reset({
         date: new Date(),
@@ -217,3 +215,5 @@ export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: Bu
     </div>
   );
 }
+
+    
