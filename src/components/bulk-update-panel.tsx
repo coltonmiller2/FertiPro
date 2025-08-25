@@ -215,5 +215,3 @@ export function BulkUpdatePanel({ selectedPlants, onClose, onBulkAddRecord }: Bu
     </div>
   );
 }
-
-    
