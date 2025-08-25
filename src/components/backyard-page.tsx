@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Leaf, Plus, Map, Table } from 'lucide-react';
+import { Leaf, Plus, Map, Table, LogOut } from 'lucide-react';
 import { useBackyardData } from '@/hooks/use-backyard-data';
 import type { Plant, PlantCategory, Record as PlantRecord, BackyardLayout } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,17 @@ import { TableView } from '@/components/table-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { BulkUpdatePanel } from '@/components/bulk-update-panel';
+import { useAuth } from '@/context/auth-context';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
 
 function isPlantCategory(value: any): value is PlantCategory {
     return value && typeof value === 'object' && 'name' in value && 'color' in value && Array.isArray(value.plants);
@@ -60,6 +71,7 @@ const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' |
 
 export function BackyardPage() {
   const { layout, loading, connectionStatus, updatePlantPosition, addPlant, removePlant, addRecordToPlant, addRecordToPlants, updateRecordInPlant, updatePlant, deleteRecordFromPlant } = useBackyardData();
+  const { user, logout } = useAuth();
   const [selectedPlantIds, setSelectedPlantIds] = useState<string[]>([]);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
@@ -188,6 +200,33 @@ export function BackyardPage() {
             <Button onClick={() => setAddModalOpen(true)}>
             <Plus className="mr-2 h-4 w-4" /> Add Plant
             </Button>
+             {user && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
+                        <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+            )}
         </div>
       </header>
       
