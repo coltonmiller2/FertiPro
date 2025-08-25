@@ -1,25 +1,51 @@
-
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User, signOut } from 'firebase/auth';
+import { 
+  onAuthStateChanged, 
+  User, 
+  signOut, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword,
+  AuthError
+} from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+
+// Helper to get a user-friendly error message
+const getFirebaseErrorMessage = (error: AuthError): string => {
+  switch (error.code) {
+    case 'auth/email-already-in-use':
+      return 'This email address is already in use by another account.';
+    case 'auth/invalid-email':
+      return 'This email address is not valid.';
+    case 'auth/operation-not-allowed':
+      return 'Email/password accounts are not enabled.';
+    case 'auth/weak-password':
+      return 'The password is too weak.';
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential':
+      return 'Invalid email or password.';
+    default:
+      return 'An unexpected error occurred. Please try again.';
+  }
+};
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signUpWithEmail: (email: string, pass: string) => Promise<string | null>;
+  signInWithEmail: (email: string, pass: string) => Promise<string | null>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signInWithGoogle: async () => {},
+  signUpWithEmail: async () => null,
+  signInWithEmail: async () => null,
   logout: async () => {},
 });
-
-const provider = new GoogleAuthProvider();
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -34,16 +60,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
-    setLoading(true);
+  const signUpWithEmail = async (email: string, password: string): Promise<string | null> => {
     try {
-      await signInWithPopup(auth, provider);
+      await createUserWithEmailAndPassword(auth, email, password);
+      return null;
     } catch (error) {
-      console.error("Error signing in with Google: ", error);
-    } finally {
-        setLoading(false);
+      return getFirebaseErrorMessage(error as AuthError);
     }
   };
+
+  const signInWithEmail = async (email: string, password: string): Promise<string | null> => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      return null;
+    } catch (error) {
+      return getFirebaseErrorMessage(error as AuthError);
+    }
+  };
+
 
   const logout = async () => {
     try {
@@ -54,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, loading, signInWithGoogle, logout };
+  const value = { user, loading, signUpWithEmail, signInWithEmail, logout };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
