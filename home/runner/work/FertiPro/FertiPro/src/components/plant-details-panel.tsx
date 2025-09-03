@@ -1,0 +1,860 @@
+"use client";
+
+import * as React from "react";
+import { X, Trash2, Calendar as CalendarIcon, Edit } from "lucide-react";
+import { format } from "date-fns";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
+
+import type { Plant, PlantCategory, Record as PlantRecord } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+interface PlantDetailsPanelProps {
+  plant: Plant | null;
+  category: PlantCategory | null;
+  onClose: () => void;
+  onAddRecord: (
+    plantId: string,
+    record: Omit<PlantRecord, "id" | "photoDataUri">,
+    photoFile?: File
+  ) => void | Promise<void>;
+  onUpdateRecord: (
+    plantId: string,
+    record: PlantRecord,
+    photoFile?: File
+  ) => void | Promise<void>;
+  onDeletePlant: (plantId: string) => void | Promise<void>;
+  onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void | Promise<void>;
+  onDeleteRecord: (plantId: string, recordId: number) => void | Promise<void>;
+}
+
+/** Treat photo as a single File (or null/undefined) — not FileList */
+const recordFormSchema = z.object({
+  id: z.number().optional(),
+  date: z.date({ required_error: "A date is required." }),
+  treatment: z.string().min(1, "Treatment is required."),
+  notes: z.string().optional(),
+  phLevel: z.string().optional(),
+  moistureLevel: z.string().optional(),
+  photo: z.instanceof(File).optional().nullable(),
+  nextScheduledFertilizationDate: z.date().optional().nullable(),
+  trunkDiameter: z.string().optional(),
+});
+
+const formatDisplayDate = (dateString: string | undefined) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString.replace(/-/g, "/"));
+  if (isNaN(date.getTime())) return "Invalid Date";
+  return format(date, "PPP");
+};
+
+const EditRecordModal: React.FC<{
+  record: PlantRecord;
+  plantId: string;
+  isPalm: boolean;
+  onUpdateRecord: (plantId: string, record: PlantRecord, photoFile?: File) => void | Promise<void>;
+  isOpen: boolean;
+  onClose: () => void;
+}> = ({ record, plantId, isPalm, onUpdateRecord, isOpen, onClose }) => {
+  const form = useForm<z.infer<typeof recordFormSchema>>({
+    resolver: zodResolver(recordFormSchema),
+    defaultValues: {
+      phLevel: "",
+      moistureLevel: "",
+      trunkDiameter: "",
+      photo: null,
+    },
+  });
+
+  React.useEffect(() => {
+    if (isOpen && record) {
+      const nextDate = record.nextScheduledFertilizationDate
+        ? new Date(record.nextScheduledFertilizationDate.replace(/-/g, "/"))
+        : null;
+      form.reset({
+        ...record,
+        date: new Date(record.date.replace(/-/g, "/")),
+        phLevel: record.phLevel || "",
+        moistureLevel: record.moistureLevel || "",
+        trunkDiameter: record.trunkDiameter || "",
+        nextScheduledFertilizationDate: nextDate,
+        photo: null,
+      });
+    }
+  }, [isOpen, record, form]);
+
+  async function onSubmit(values: z.infer<typeof recordFormSchema>) {
+    const photoFile = values.photo ?? undefined;
+
+    const updatedRecord: PlantRecord = {
+      ...record,
+      treatment: values.treatment,
+      notes: values.notes ?? "",
+      phLevel: values.phLevel ?? "",
+      moistureLevel: values.moistureLevel ?? "",
+      trunkDiameter: values.trunkDiameter ?? "",
+      date: format(values.date, "yyyy-MM-dd"),
+      nextScheduledFertilizationDate: values.nextScheduledFertilizationDate
+        ? format(values.nextScheduledFertilizationDate, "yyyy-MM-dd")
+        : undefined,
+    };
+
+    await onUpdateRecord(plantId, updatedRecord, photoFile);
+    onClose();
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Record</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="treatment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Treatment</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="e.g., 4 TBSP" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="phLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>pH Level</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="moistureLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Moisture %</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {isPalm && (
+              <FormField
+                control={form.control}
+                name="trunkDiameter"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Trunk Diameter</FormLabel>
+                    <FormControl>
+                      <Input placeholder='e.g., 12"' {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            <FormField
+              control={form.control}
+              name="nextScheduledFertilizationDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Next Fertilization</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value ?? undefined}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* SINGLE-FILE INPUT */}
+            <FormField
+              control={form.control}
+              name="photo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Photo</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0] ?? null;
+                        field.onChange(f);
+                      }}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit">Save Changes</Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const plantNameFormSchema = z.object({
+  type: z.string().min(2, { message: "Plant name must be at least 2 characters." }),
+});
+
+const EditPlantNameModal: React.FC<{
+  plant: Plant;
+  onUpdatePlant: (plantId: string, updates: Partial<Plant>) => void | Promise<void>;
+  isOpen: boolean;
+  onClose: () => void;
+}> = ({ plant, onUpdatePlant, isOpen, onClose }) => {
+  const form = useForm<z.infer<typeof plantNameFormSchema>>({
+    resolver: zodResolver(plantNameFormSchema),
+    defaultValues: { type: plant.type },
+  });
+
+  React.useEffect(() => {
+    if (isOpen) {
+      form.reset({ type: plant.type });
+    }
+  }, [isOpen, plant, form]);
+
+  function onSubmit(values: z.infer<typeof plantNameFormSchema>) {
+    onUpdatePlant(plant.id, { type: values.type });
+    onClose();
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Plant Name</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 py-4">
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Plant Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit">Save</Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export function PlantDetailsPanel({
+  plant,
+  category,
+  onClose,
+  onAddRecord,
+  onUpdateRecord,
+  onDeletePlant,
+  onUpdatePlant,
+  onDeleteRecord,
+}: PlantDetailsPanelProps) {
+  const [editingRecord, setEditingRecord] = React.useState<PlantRecord | null>(null);
+  const [isEditingPlantName, setIsEditingPlantName] = React.useState(false);
+
+  const isPalm = category?.name === "Queen and King Palms";
+  const latestRecord = plant?.records?.[0];
+
+  const form = useForm<z.infer<typeof recordFormSchema>>({
+    resolver: zodResolver(recordFormSchema),
+    defaultValues: {
+      date: new Date(),
+      treatment: "",
+      notes: "",
+      phLevel: "",
+      moistureLevel: "",
+      photo: null,
+      trunkDiameter: "",
+      nextScheduledFertilizationDate: null,
+    },
+  });
+
+  React.useEffect(() => {
+    if (plant) {
+      form.reset({
+        date: new Date(),
+        treatment: "",
+        notes: "",
+        phLevel: "",
+        moistureLevel: "",
+        photo: null,
+        trunkDiameter: latestRecord?.trunkDiameter || "",
+      });
+    }
+  }, [plant, latestRecord, form]);
+
+  async function onSubmit(values: z.infer<typeof recordFormSchema>) {
+    if (!plant) return;
+
+    const photoFile = values.photo ?? undefined;
+
+    const recordForFirestore: Omit<PlantRecord, "id" | "photoDataUri"> = {
+      treatment: values.treatment,
+      notes: values.notes ?? "",
+      phLevel: values.phLevel ?? "",
+      moistureLevel: values.moistureLevel ?? "",
+      trunkDiameter: values.trunkDiameter ?? "",
+      date: format(values.date, "yyyy-MM-dd"),
+      nextScheduledFertilizationDate: values.nextScheduledFertilizationDate
+        ? format(values.nextScheduledFertilizationDate, "yyyy-MM-dd")
+        : undefined,
+    };
+
+    await onAddRecord(plant.id, recordForFirestore, photoFile);
+
+    // Reset form (including clearing the file input)
+    form.reset({
+      date: new Date(),
+      treatment: "",
+      notes: "",
+      phLevel: "",
+      moistureLevel: "",
+      trunkDiameter: "",
+      nextScheduledFertilizationDate: null,
+      photo: null,
+    });
+
+    const photoInput = document.querySelector(
+      'input[type="file"][name="photo"]'
+    ) as HTMLInputElement | null;
+    if (photoInput) photoInput.value = "";
+  }
+
+  return (
+    <div className="flex flex-col h-full w-full bg-background border-l border-border shadow-lg z-20">
+      {plant && category && (
+        <>
+          <header className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center gap-2">
+              <div>
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  {plant.type} ({plant.label})
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setIsEditingPlantName(true)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </h2>
+                <p className="text-sm" style={{ color: category.color }}>
+                  {category.name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Next Fertilization: {formatDisplayDate(latestRecord?.nextScheduledFertilizationDate)}
+                </p>
+                {isPalm && latestRecord?.trunkDiameter && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Trunk Diameter: {latestRecord.trunkDiameter}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="h-5 w-5" />
+            </Button>
+          </header>
+
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-6">
+              <Accordion type="single" collapsible>
+                <AccordionItem value="item-1" className="border-b-0">
+                  <AccordionTrigger className="text-base font-semibold">
+                    New Record / Soil Test
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-6 pt-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base">New Record / Soil Test</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Form {...form}>
+                          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField
+                              control={form.control}
+                              name="date"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                  <FormLabel>Date</FormLabel>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant={"outline"}
+                                          className={cn(
+                                            "w-full pl-3 text-left font-normal",
+                                            !field.value && "text-muted-foreground"
+                                          )}
+                                        >
+                                          {field.value ? (
+                                            format(field.value, "PPP")
+                                          ) : (
+                                            <span>Pick a date</span>
+                                          )}
+                                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <Calendar
+                                        mode="single"
+                                        selected={field.value}
+                                        onSelect={field.onChange}
+                                        initialFocus
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="treatment"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Treatment</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g., Palm Gain 8-2-12" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="notes"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Notes</FormLabel>
+                                  <FormControl>
+                                    <Textarea placeholder="e.g., 4 TBSP" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="phLevel"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>pH Level</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="e.g., 6.8" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="moistureLevel"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Moisture %</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="e.g., 55" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            {isPalm && (
+                              <FormField
+                                control={form.control}
+                                name="trunkDiameter"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Trunk Diameter</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="e.g., 12&quot;" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )}
+
+                            <FormField
+                              control={form.control}
+                              name="nextScheduledFertilizationDate"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                  <FormLabel>Next Fertilization</FormLabel>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant={"outline"}
+                                          className={cn(
+                                            "w-full pl-3 text-left font-normal",
+                                            !field.value && "text-muted-foreground"
+                                          )}
+                                        >
+                                          {field.value ? (
+                                            format(field.value, "PPP")
+                                          ) : (
+                                            <span>Pick a date</span>
+                                          )}
+                                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <Calendar
+                                        mode="single"
+                                        selected={field.value ?? undefined}
+                                        onSelect={field.onChange}
+                                        initialFocus
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            {/* SINGLE-FILE INPUT */}
+                            <FormField
+                              control={form.control}
+                              name="photo"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Attach Photo</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) => {
+                                        const f = e.target.files?.[0] ?? null;
+                                        field.onChange(f);
+                                      }}
+                                      ref={field.ref}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <Button type="submit" className="w-full">
+                              Add Record
+                            </Button>
+                          </form>
+                        </Form>
+                      </CardContent>
+                    </Card>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              <div>
+                <h3 className="text-base font-semibold mb-2">History</h3>
+                <div className="space-y-3">
+                  {plant.records.length > 0 ? (
+                    plant.records.map((record) => (
+                      <Card key={record.id} className="text-sm">
+                        <CardContent className="pt-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p>
+                                <strong>Date:</strong> {formatDisplayDate(record.date)}
+                              </p>
+                              <p>
+                                <strong>Treatment:</strong> {record.treatment}
+                              </p>
+                              {record.notes && (
+                                <p className="whitespace-pre-wrap">
+                                  <strong>Notes:</strong> {record.notes}
+                                </p>
+                              )}
+                              {(record.phLevel || record.moistureLevel) && (
+                                <Separator className="my-2" />
+                              )}
+                              {record.phLevel && (
+                                <p>
+                                  <strong>pH:</strong> {record.phLevel}
+                                </p>
+                              )}
+                              {record.moistureLevel && (
+                                <p>
+                                  <strong>Moisture:</strong> {record.moistureLevel}%
+                                </p>
+                              )}
+                              {record.trunkDiameter && (
+                                <p>
+                                  <strong>Trunk Diameter:</strong> {record.trunkDiameter}
+                                </p>
+                              )}
+                              {record.nextScheduledFertilizationDate && (
+                                <p>
+                                  <strong>Next Fertilization:</strong>{" "}
+                                  {formatDisplayDate(record.nextScheduledFertilizationDate)}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setEditingRecord(record)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This action will permanently delete this record. This cannot
+                                      be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => onDeleteRecord(plant.id, record.id)}
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                          {record.photoDataUri && (
+                            <div className="mt-2">
+                              <Image
+                                src={record.photoDataUri}
+                                alt={`Record photo for ${record.date}`}
+                                width={80}
+                                height={80}
+                                className="rounded-md object-cover"
+                              />
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No records found.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+
+          <footer className="p-4 border-t mt-auto bg-background">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full">
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Plant
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will permanently remove this plant and all its records. This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDeletePlant(plant.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </footer>
+        </>
+      )}
+      {editingRecord && (
+        <EditRecordModal
+          isOpen={!!editingRecord}
+          onClose={() => setEditingRecord(null)}
+          record={editingRecord}
+          plantId={plant!.id}
+          isPalm={isPalm}
+          onUpdateRecord={onUpdateRecord}
+        />
+      )}
+      {plant && (
+        <EditPlantNameModal
+          isOpen={isEditingPlantName}
+          onClose={() => setIsEditingPlantName(false)}
+          plant={plant}
+          onUpdatePlant={onUpdatePlant}
+        />
+      )}
+    </div>
+  );
+}
