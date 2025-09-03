@@ -421,19 +421,23 @@ export function PlantDetailsPanel({
 
   React.useEffect(() => {
     if (plant) {
+      // Logic to get the latest record's next fertilization date for the display header
       const nextDate = latestRecord?.nextScheduledFertilizationDate
         ? new Date(latestRecord.nextScheduledFertilizationDate.replace(/-/g, "/"))
         : null;
 
+      // The key change is to only reset fields relevant to the selected plant,
+      // and NOT to set a default for the NEW record form.
+      // Your previous logic here was overriding the new record form's defaults.
       form.reset({
         date: new Date(),
         treatment: "",
         notes: "",
-        phLevel: "",
-        moistureLevel: "",
+        phLevel: latestRecord?.phLevel || "",
+        moistureLevel: latestRecord?.moistureLevel || "",
         photo: null,
         trunkDiameter: latestRecord?.trunkDiameter || "",
-        nextScheduledFertilizationDate: nextDate,
+        nextScheduledFertilizationDate: null,
       });
     }
   }, [plant, latestRecord, form]);
@@ -796,9 +800,9 @@ export function PlantDetailsPanel({
                             <div className="mt-2">
                               <Image
                                 src={record.photoDataUri}
-                                alt={`Record photo for ${record.date}`}
-                                width={80}
-                                height={80}
+                                alt={`Photo of ${plant.type} record ${record.id}`}
+                                width={200}
+                                height={200}
                                 className="rounded-md object-cover"
                               />
                             </div>
@@ -807,28 +811,26 @@ export function PlantDetailsPanel({
                       </Card>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No records found.
-                    </p>
+                    <p className="text-sm text-muted-foreground">No records found for this plant.</p>
                   )}
                 </div>
               </div>
             </div>
           </ScrollArea>
 
-          <footer className="p-4 border-t mt-auto bg-background">
+          <footer className="p-4 border-t">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full">
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete Plant
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Plant
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action will permanently remove this plant and all its records. This action
-                    cannot be undone.
+                    This action will permanently delete this plant and all its associated records. This cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -842,22 +844,30 @@ export function PlantDetailsPanel({
           </footer>
         </>
       )}
+
+      {!plant && (
+        <div className="p-4 flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+          <p>Select a plant from the map to view its details.</p>
+        </div>
+      )}
+
       {editingRecord && (
         <EditRecordModal
-          isOpen={!!editingRecord}
-          onClose={() => setEditingRecord(null)}
           record={editingRecord}
           plantId={plant!.id}
           isPalm={isPalm}
           onUpdateRecord={onUpdateRecord}
+          isOpen={!!editingRecord}
+          onClose={() => setEditingRecord(null)}
         />
       )}
-      {plant && (
+
+      {isEditingPlantName && plant && (
         <EditPlantNameModal
-          isOpen={isEditingPlantName}
-          onClose={() => setIsEditingPlantName(false)}
           plant={plant}
           onUpdatePlant={onUpdatePlant}
+          isOpen={isEditingPlantName}
+          onClose={() => setIsEditingPlantName(false)}
         />
       )}
     </div>
