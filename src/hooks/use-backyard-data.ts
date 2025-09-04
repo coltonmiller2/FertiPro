@@ -29,6 +29,21 @@ function fileToDataUri(file: File): Promise<string> {
   });
 }
 
+/** Upload photo to Firebase Storage if available; otherwise fall back to Data URI. */
+async function uploadPhotoIfPossible(path: string, file: File): Promise<string> {
+  try {
+    const mod = await import("firebase/storage");
+    const { getStorage, ref, uploadBytes, getDownloadURL } = mod;
+    const storage = getStorage();
+    const r = ref(storage, path);
+    await uploadBytes(r, file);
+    return getDownloadURL(r);
+  } catch {
+    // Storage not configured or failed; fallback to inline Data URI
+    return fileToDataUri(file);
+  }
+}
+
 function isPlantCategory(value: unknown): value is PlantCategory {
   return (
     !!value &&
@@ -70,20 +85,6 @@ function deepStripUndefined<T>(value: T): T {
   return value;
 }
 
-/** Upload photo to Firebase Storage if available; otherwise fall back to Data URI. */
-async function uploadPhotoIfPossible(path: string, file: File): Promise<string> {
-  try {
-    const mod = await import("firebase/storage");
-    const { getStorage, ref, uploadBytes, getDownloadURL } = mod;
-    const storage = getStorage();
-    const r = ref(storage, path);
-    await uploadBytes(r, file);
-    return getDownloadURL(r);
-  } catch {
-    // Storage not configured or failed; fallback to inline Data URI
-    return fileToDataUri(file);
-  }
-}
 
 export function useBackyardData(docId: string = "myLayout") {
   const layoutRef = useMemo(() => doc(db, "backyardLayouts", docId), [docId]);
