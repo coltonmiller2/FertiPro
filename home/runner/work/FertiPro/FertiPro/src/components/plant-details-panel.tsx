@@ -70,7 +70,6 @@ interface PlantDetailsPanelProps {
   onDeleteRecord: (plantId: string, recordId: number) => void | Promise<void>;
 }
 
-/** Treat photo as a single File (or null/undefined) — not FileList */
 const recordFormSchema = z.object({
   id: z.number().optional(),
   date: z.date({ required_error: "A date is required." }),
@@ -293,7 +292,6 @@ const EditRecordModal: React.FC<{
               )}
             />
 
-            {/* SINGLE-FILE INPUT */}
             <FormField
               control={form.control}
               name="photo"
@@ -429,6 +427,7 @@ export function PlantDetailsPanel({
         moistureLevel: "",
         photo: null,
         trunkDiameter: latestRecord?.trunkDiameter || "",
+        nextScheduledFertilizationDate: null,
       });
     }
   }, [plant, latestRecord, form]);
@@ -452,7 +451,6 @@ export function PlantDetailsPanel({
 
     await onAddRecord(plant.id, recordForFirestore, photoFile);
 
-    // Reset form (including clearing the file input)
     form.reset({
       date: new Date(),
       treatment: "",
@@ -472,7 +470,7 @@ export function PlantDetailsPanel({
 
   return (
     <div className="flex flex-col h-full w-full bg-background border-l border-border shadow-lg z-20">
-      {plant && category && (
+      {plant && category ? (
         <>
           <header className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-2">
@@ -669,7 +667,6 @@ export function PlantDetailsPanel({
                               )}
                             />
 
-                            {/* SINGLE-FILE INPUT */}
                             <FormField
                               control={form.control}
                               name="photo"
@@ -836,7 +833,12 @@ export function PlantDetailsPanel({
             </AlertDialog>
           </footer>
         </>
+      ) : (
+         <div className="p-4 flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+            <p>Select a plant from the map to view its details.</p>
+        </div>
       )}
+
       {editingRecord && (
         <EditRecordModal
           isOpen={!!editingRecord}
